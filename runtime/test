@@ -1,0 +1,37 @@
+
+source registers
+
+
+if [ ! -f uw.csv ]; then
+    echo "uw.csv not found!"
+    exit 1
+fi
+
+# Compile the userwave CSV to a binary file
+uwcompile uw.csv || exit 1
+
+# How big is the resulting binary file? 
+file_len=$(stat -c %s uw.bin)
+
+# How many userwave commands are in the binary file?
+userwave_length=$((file_len / 64))
+
+# Load the binary file into the host-RAM buffer
+physram 0x1_0000_0000 -load uw.bin
+
+# Clear a few entries in the "recorded userwave" buffer
+physram 0x2_0000_0000 -clear 0xFF
+
+axi $REG_HOST_ADDR_H 0x0000_0001
+axi $REG_HOST_ADDR_L 0x0000_0000
+
+axi $REG_HOST_CAPACITY $((1024* 1024 * 1024))
+axi $REG_UWC_TOTAL $userwave_length
+
+axi $REG_UWC_PROVIDED 0
+show_stats
+
+axi $REG_UWC_PROVIDED $userwave_length
+show_stats
+
+axi $REG_START_FETCHER 1

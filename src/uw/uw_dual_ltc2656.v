@@ -1,0 +1,297 @@
+//====================================================================================
+//                        ------->  Revision History  <------
+//====================================================================================
+//
+//   Date     Who   Ver  Changes
+//====================================================================================
+// 25-Mar-26  DWW     1  Initial creation
+//====================================================================================
+
+/*
+    This module drives a pair of LTC-2656 eight-channel DACs.   We assume that
+    the two DACs share a common CS/LD input and share a common SCK input.
+
+    The SCK pins of the DACs are clocked at this modules "clk" frequency 
+    divided by 4.   Since the maximum SCK frequency of an LTC-2656 is 50 MHz,
+    that means that this module must not be clocked faster than 200 MHz.
+
+    The LTC-2656 supports two commands that are of interest to us:
+       (1) Set the value of an channel *without* updating the voltage on the pin
+       (2) Set the value of a channel and update the voltages on all pins
+
+    Our programming process is:
+       (1) Pulse the CS/LD pin high to cause the previous command to execute
+       (2) Send the DAC command to utilize the external voltage reference
+       (3) Pulse the CS/LD pin high to cause the previous command to execute
+       (4) Send the DAC command to update a channel *without* updating the pin voltage
+           (execute steps 3 and 4 a total of 7 times, for channels A thru G)
+       (5) Pulse the CS/LD pin high to cause the previous command to execute
+       (6) Send the DAC command to updated channel H and update all pin voltages
+
+    Note that the command sent to the DAC in step (6) won't be executed until
+    the next time we start the programming process!
+
+*/
+
+
+module uw_dual_ltc2656
+(
+    input   clk,
+    input   resetn,
+
+    // When this strobes high, we program the DACs
+    input start_stb,
+    
+    // These are each eight 16-bit DAC values
+    input[127:0] dac_values_0,
+    input[127:0] dac_values_1,
+
+    output     spi_csld,   // 0 = Chip-select, rising-edge = execute command
+    output reg spi_sck,    // SPI serial clock
+    output reg spi_mosi0,  // SPI master-out, slave-in pin for DAC #0
+    output reg spi_mosi1,  // SPI master-out, slave-in pin for DAC #1
+
+    // When this is high, this engine is idle
+    output idle
+);
+
+genvar i;
+
+
+//=============================================================================
+// When start_stb strobes high, unpack ports "dac_values_0" and "dac_values_1"
+// into these arrays
+//=============================================================================
+reg[15:0] r_dac_values_0[0:7];
+reg[15:0] r_dac_values_1[0:7];
+//-----------------------------------------------------------------------------
+for (i=0; i<8; i=i+1) begin
+    always @(posedge clk) begin
+        if (start_stb) begin
+            r_dac_values_0[i] <= dac_values_0[i*16 +: 16];
+            r_dac_values_1[i] <= dac_values_1[i*16 +: 16];
+        end
+    end
+end
+//=============================================================================
+
+
+
+//-----------------------------------------------------------------------------
+// These are 4-bit commands we can send to the DAC
+//-----------------------------------------------------------------------------
+localparam[3:0]  DAC_SET_WITHOUT_OUTPUT = 4'b0000;
+localparam[3:0]  DAC_SET_AND_OUTPUT_ALL = 4'b0010;
+localparam[3:0]  DAC_USE_EXTERNAL_VREF  = 4'b0111;
+//-----------------------------------------------------------------------------
+
+// This DAC command instructs the DACs to use an external reference voltage
+localparam[23:0] USE_EXTERNAL_VREF = {DAC_USE_EXTERNAL_VREF, 4'b0, 16'b0};
+
+// These will contain the commands we're going to send to the DACs
+wire[23:0] command_list_0[0:7];
+wire[23:0] command_list_1[0:7];
+
+
+// Commands to send to DAC #0
+assign command_list_0[0] = {DAC_SET_WITHOUT_OUTPUT, 4'd0, r_dac_values_0[0]};
+assign command_list_0[1] = {DAC_SET_WITHOUT_OUTPUT, 4'd1, r_dac_values_0[1]};
+assign command_list_0[2] = {DAC_SET_WITHOUT_OUTPUT, 4'd2, r_dac_values_0[2]};
+assign command_list_0[3] = {DAC_SET_WITHOUT_OUTPUT, 4'd3, r_dac_values_0[3]};
+assign command_list_0[4] = {DAC_SET_WITHOUT_OUTPUT, 4'd4, r_dac_values_0[4]};
+assign command_list_0[5] = {DAC_SET_WITHOUT_OUTPUT, 4'd5, r_dac_values_0[5]};
+assign command_list_0[6] = {DAC_SET_WITHOUT_OUTPUT, 4'd6, r_dac_values_0[6]};
+assign command_list_0[7] = {DAC_SET_AND_OUTPUT_ALL, 4'd7, r_dac_values_0[7]};
+
+// Commands to send to DAC #1
+assign command_list_1[0] = {DAC_SET_WITHOUT_OUTPUT, 4'd0, r_dac_values_1[0]};
+assign command_list_1[1] = {DAC_SET_WITHOUT_OUTPUT, 4'd1, r_dac_values_1[1]};
+assign command_list_1[2] = {DAC_SET_WITHOUT_OUTPUT, 4'd2, r_dac_values_1[2]};
+assign command_list_1[3] = {DAC_SET_WITHOUT_OUTPUT, 4'd3, r_dac_values_1[3]};
+assign command_list_1[4] = {DAC_SET_WITHOUT_OUTPUT, 4'd4, r_dac_values_1[4]};
+assign command_list_1[5] = {DAC_SET_WITHOUT_OUTPUT, 4'd5, r_dac_values_1[5]};
+assign command_list_1[6] = {DAC_SET_WITHOUT_OUTPUT, 4'd6, r_dac_values_1[6]};
+assign command_list_1[7] = {DAC_SET_AND_OUTPUT_ALL, 4'd7, r_dac_values_1[7]};
+
+
+//=============================================================================
+// This is an ultra-simple bit-banged SPI where every state of the csld, sck,
+// and mosi pins lasts for two clock cycles.
+//
+// To use it, load the two 24-bit output values into pending[0] and pending[1]
+// then strobe "bitbang_stb" high for a single cycle.   When "bitbang_idle" 
+// goes high, the SPI output is complete.
+//    
+// Note that this code strobes the spi_csld pin high *before* banging out
+// the data bits.  This causes the DACs to execute the previously programmed 
+// command just before we program the current command.
+//=============================================================================
+reg[23:0] pending[0:1];
+reg       bitbang_stb;
+wire      bitbang_idle;
+//-----------------------------------------------------------------------------
+reg[6:0]   bbsm_state;
+localparam BBSM_IDLE   = 1;
+localparam BBSM_LOOP   = 2;
+localparam BBSM_STATE2 = 4;
+localparam BBSM_STATE3 = 8;
+localparam BBSM_STATE4 = 16;
+localparam BBSM_STATE5 = 32;
+localparam BBSM_FINAL  = 64;
+
+reg[23:0] shifter[0:1];
+reg[ 5:0] bit_count;
+assign    bitbang_idle = (bitbang_stb == 0 && bbsm_state == BBSM_IDLE);
+//-----------------------------------------------------------------------------
+always @(posedge clk) begin
+
+    if (resetn == 0) begin
+        bbsm_state <= BBSM_IDLE;
+        spi_sck    <= 0;
+        spi_mosi0  <= 0;
+        spi_mosi1  <= 0;
+    end
+
+    else case (bbsm_state)
+
+    // If we're told to start, load the shifters.  spi_csld will
+    // go high on the same clock cycle that bitbang_stb goes high
+    BBSM_IDLE:
+        if (bitbang_stb) begin
+            shifter[0] <= pending[0];
+            shifter[1] <= pending[1];
+            spi_sck    <= 0;
+            spi_mosi0  <= 0;
+            spi_mosi1  <= 0;
+            bit_count  <= 0;
+            bbsm_state <= BBSM_LOOP;
+        end
+
+    // Drive the top bit of data to spi_mosi while sck is low
+    BBSM_LOOP:
+        begin
+            spi_sck    <= 0;
+            spi_mosi0  <= shifter[0][23];
+            spi_mosi1  <= shifter[1][23];
+            bbsm_state <= BBSM_STATE2;
+        end
+
+    // Keep driving the top bit of data to spi_mosi while sck is low
+    BBSM_STATE2:
+        begin
+            spi_sck    <= 0;
+            spi_mosi0  <= shifter[0][23];
+            spi_mosi1  <= shifter[1][23];
+            bbsm_state <= BBSM_STATE3;
+        end
+
+    // Drive the top bit of data to spi_mosi while sck is high
+    BBSM_STATE3:
+        begin
+            spi_sck    <= 1;
+            spi_mosi0  <= shifter[0][23];
+            spi_mosi1  <= shifter[1][23];
+            bit_count  <= bit_count + 1;
+            bbsm_state <= BBSM_STATE4;
+        end
+
+    // Keep driving the top bit of data to spi_mosi while sck is high
+    BBSM_STATE4:
+        begin
+            spi_sck    <= 1;
+            spi_mosi0  <= shifter[0][23];
+            spi_mosi1  <= shifter[1][23];
+
+            shifter[0] <= shifter[0] << 1;
+            shifter[1] <= shifter[1] << 1;
+            if (bit_count == 24)
+                bbsm_state <= BBSM_STATE5;
+            else 
+                bbsm_state <= BBSM_LOOP;
+        end
+
+    // Force sck and the mosi pins low in preperation for the 
+    // next "bitbang_stb" command
+    BBSM_STATE5:
+        begin
+            spi_sck    <= 0;
+            spi_mosi0  <= 0;
+            spi_mosi1  <= 0;
+            bbsm_state <= BBSM_FINAL;
+        end
+
+    // Keep everything low for a second clock cycle
+    BBSM_FINAL:
+        begin
+            spi_sck    <= 0;
+            spi_mosi0  <= 0;
+            spi_mosi1  <= 0;
+            bbsm_state <= BBSM_IDLE;
+        end
+
+    endcase
+
+end
+
+//=============================================================================
+
+
+
+
+//=============================================================================
+// When "start_stb" strobes high, this state machine sends all 9 commands
+// to their respective DACs.
+//=============================================================================
+reg      fsm_state;
+reg[3:0] next_idx;
+//-----------------------------------------------------------------------------
+always @(posedge clk) begin
+
+    // This strobes high for one clock cycle at a time
+    bitbang_stb <= 0;
+
+    if (resetn == 0) begin
+        fsm_state <= 0;
+    end
+
+    else case(fsm_state)
+        0:  if (start_stb) begin
+                pending[0]  <= USE_EXTERNAL_VREF;
+                pending[1]  <= USE_EXTERNAL_VREF;
+                bitbang_stb <= 1;
+                next_idx    <= 0;
+                fsm_state   <= 1;               
+            end
+
+        // The expression "next_idx[3] == 0" is just an efficient
+        // way to determine whether next_idx is less than 8
+        1:  if (bitbang_idle) begin
+                if (next_idx[3] == 0) begin
+                    pending[0]  <= command_list_0[next_idx];
+                    pending[1]  <= command_list_1[next_idx];
+                    bitbang_stb <= 1;
+                    next_idx    <= next_idx + 1;
+                end
+
+                else fsm_state <= 0;
+            end
+
+    endcase
+
+end
+
+// We're idle when we're in state 0 and we haven't been told to start
+assign idle = (start_stb == 0) & (fsm_state == 0);
+//=============================================================================
+
+
+// We want csld to go high on the same clock cycle that the initial
+// "start_stb" goes high.  This ensures that the previously programmed
+// DAC values are driven to the pins on the same clock cycle where
+// "start_stb" occurs
+assign spi_csld = (bbsm_state == BBSM_IDLE && start_stb   == 1)
+                | (bbsm_state == BBSM_IDLE && bitbang_stb == 1)
+                | (bbsm_state == BBSM_LOOP && bit_count   == 0);
+
+
+endmodule
