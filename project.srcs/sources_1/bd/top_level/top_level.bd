@@ -25,10 +25,17 @@
         "uw_ctl": "",
         "uw_engine": "",
         "uw_pulse": "",
-        "uw_extra_flops": ""
+        "uw_extra_flops": "",
+        "system_ila_0": ""
       },
       "tick_src": "",
-      "uw_recorder": ""
+      "uw_recorder": {
+        "uw_recorder_out": "",
+        "uw_recorder_in": "",
+        "uw_sim_ltc2656_0": "",
+        "uw_sim_ltc2656_1": "",
+        "uw_recorder_ctl": ""
+      }
     },
     "interface_ports": {
       "pcie0_refclk": {
@@ -701,7 +708,7 @@
             "value": "1"
           },
           "NUM_MI": {
-            "value": "1"
+            "value": "2"
           },
           "NUM_SI": {
             "value": "1"
@@ -721,10 +728,36 @@
               }
             },
             "bridges": [
-              "M00_AXI"
+              "M00_AXI",
+              "M01_AXI"
             ]
           },
           "M00_AXI": {
+            "mode": "Master",
+            "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
+            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+            "parameters": {
+              "NUM_READ_OUTSTANDING": {
+                "value": "8"
+              },
+              "NUM_READ_THREADS": {
+                "value": "1"
+              },
+              "NUM_WRITE_OUTSTANDING": {
+                "value": "32"
+              },
+              "NUM_WRITE_THREADS": {
+                "value": "1"
+              },
+              "RUSER_BITS_PER_BYTE": {
+                "value": "0"
+              },
+              "WUSER_BITS_PER_BYTE": {
+                "value": "0"
+              }
+            }
+          },
+          "M01_AXI": {
             "mode": "Master",
             "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
@@ -1220,6 +1253,16 @@
               }
             },
             "ports": {
+              "dbg_fsm_state": {
+                "direction": "O",
+                "left": "2",
+                "right": "0"
+              },
+              "dbg_fifo_entries": {
+                "direction": "O",
+                "left": "15",
+                "right": "0"
+              },
               "clk": {
                 "type": "clk",
                 "direction": "I",
@@ -1254,6 +1297,9 @@
               },
               "start_stb": {
                 "direction": "I"
+              },
+              "fifo_loaded": {
+                "direction": "O"
               },
               "busy": {
                 "direction": "O"
@@ -1290,6 +1336,9 @@
               },
               "start_engine_stb": {
                 "direction": "O"
+              },
+              "engine_busy": {
+                "direction": "I"
               }
             },
             "addressing": {
@@ -1570,6 +1619,12 @@
               "start_fetcher_stb": {
                 "direction": "O"
               },
+              "uw_engine_busy": {
+                "direction": "I"
+              },
+              "uw_fetcher_busy": {
+                "direction": "I"
+              },
               "uw_host_addr": {
                 "direction": "O",
                 "left": "63",
@@ -1590,6 +1645,12 @@
                 "left": "31",
                 "right": "0"
               },
+              "req_safe_halt": {
+                "direction": "O"
+              },
+              "req_unsafe_halt": {
+                "direction": "O"
+              },
               "uwc_fetched": {
                 "direction": "I",
                 "left": "31",
@@ -1601,6 +1662,9 @@
                 "right": "0"
               },
               "uw_underflow_stb": {
+                "direction": "I"
+              },
+              "uw_short_uwc_stb": {
                 "direction": "I"
               }
             }
@@ -1717,7 +1781,19 @@
               "start_stb": {
                 "direction": "I"
               },
+              "fifo_loaded": {
+                "direction": "I"
+              },
+              "busy": {
+                "direction": "O"
+              },
               "fetcher_busy": {
+                "direction": "I"
+              },
+              "req_safe_halt": {
+                "direction": "I"
+              },
+              "req_unsafe_halt": {
                 "direction": "I"
               },
               "row_pulse": {
@@ -1732,6 +1808,9 @@
                 "right": "0"
               },
               "underflow_stb": {
+                "direction": "O"
+              },
+              "short_uwc_stb": {
                 "direction": "O"
               },
               "liq_sw": {
@@ -1961,6 +2040,21 @@
                 "direction": "O"
               }
             }
+          },
+          "system_ila_0": {
+            "vlnv": "xilinx.com:ip:system_ila:1.1",
+            "ip_revision": "19",
+            "xci_name": "top_level_system_ila_0_0",
+            "xci_path": "ip/top_level_system_ila_0_0/top_level_system_ila_0_0.xci",
+            "inst_hier_path": "uw_engine/system_ila_0",
+            "parameters": {
+              "C_MON_TYPE": {
+                "value": "NATIVE"
+              },
+              "C_NUM_OF_PROBES": {
+                "value": "5"
+              }
+            }
           }
         },
         "interface_nets": {
@@ -1987,11 +2081,12 @@
           "clk_1": {
             "ports": [
               "clk",
-              "uw_fetcher/clk",
-              "uw_ctl/clk",
               "uw_extra_flops/clk",
               "uw_pulse/clk",
-              "uw_engine/clk"
+              "system_ila_0/clk",
+              "uw_ctl/clk",
+              "uw_engine/clk",
+              "uw_fetcher/clk"
             ]
           },
           "pa_sync_1": {
@@ -2003,10 +2098,22 @@
           "resetn_1": {
             "ports": [
               "resetn",
-              "uw_fetcher/resetn",
-              "uw_ctl/resetn",
               "uw_extra_flops/resetn",
-              "uw_engine/resetn"
+              "uw_ctl/resetn",
+              "uw_engine/resetn",
+              "uw_fetcher/resetn"
+            ]
+          },
+          "uw_ctl_req_safe_halt": {
+            "ports": [
+              "uw_ctl/req_safe_halt",
+              "uw_engine/req_safe_halt"
+            ]
+          },
+          "uw_ctl_req_unsafe_halt": {
+            "ports": [
+              "uw_ctl/req_unsafe_halt",
+              "uw_engine/req_unsafe_halt"
             ]
           },
           "uw_ctl_start_fetcher_stb": {
@@ -2037,6 +2144,14 @@
             "ports": [
               "uw_ctl/uwc_total",
               "uw_fetcher/uwc_total"
+            ]
+          },
+          "uw_engine_busy": {
+            "ports": [
+              "uw_engine/busy",
+              "system_ila_0/probe0",
+              "uw_ctl/uw_engine_busy",
+              "uw_fetcher/engine_busy"
             ]
           },
           "uw_engine_glb_pre_sw": {
@@ -2091,6 +2206,12 @@
             "ports": [
               "uw_engine/rs256",
               "uw_extra_flops/rs256"
+            ]
+          },
+          "uw_engine_short_uwc_stb": {
+            "ports": [
+              "uw_engine/short_uwc_stb",
+              "uw_ctl/uw_short_uwc_stb"
             ]
           },
           "uw_engine_smem_access_enable": {
@@ -2258,7 +2379,28 @@
           "uw_fetcher_busy": {
             "ports": [
               "uw_fetcher/busy",
+              "system_ila_0/probe1",
+              "uw_ctl/uw_fetcher_busy",
               "uw_engine/fetcher_busy"
+            ]
+          },
+          "uw_fetcher_dbg_fifo_entries": {
+            "ports": [
+              "uw_fetcher/dbg_fifo_entries",
+              "system_ila_0/probe4"
+            ]
+          },
+          "uw_fetcher_dbg_fsm_state": {
+            "ports": [
+              "uw_fetcher/dbg_fsm_state",
+              "system_ila_0/probe2"
+            ]
+          },
+          "uw_fetcher_fifo_loaded": {
+            "ports": [
+              "uw_fetcher/fifo_loaded",
+              "uw_engine/fifo_loaded",
+              "system_ila_0/probe3"
             ]
           },
           "uw_fetcher_start_engine_stb": {
@@ -2312,359 +2454,24 @@
         }
       },
       "uw_recorder": {
-        "vlnv": "xilinx.com:module_ref:uw_recorder:1.0",
-        "ip_revision": "1",
-        "xci_name": "top_level_uw_recorder_0_0",
-        "xci_path": "ip/top_level_uw_recorder_0_0/top_level_uw_recorder_0_0.xci",
-        "inst_hier_path": "uw_recorder",
-        "reference_info": {
-          "ref_type": "hdl",
-          "ref_name": "uw_recorder",
-          "boundary_crc": "0x0"
-        },
         "interface_ports": {
           "M_AXI": {
             "mode": "Master",
             "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
-            "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
-            "parameters": {
-              "DATA_WIDTH": {
-                "value": "512",
-                "value_src": "auto"
-              },
-              "PROTOCOL": {
-                "value": "AXI4",
-                "value_src": "constant"
-              },
-              "FREQ_HZ": {
-                "value": "250000000",
-                "value_src": "user_prop"
-              },
-              "ID_WIDTH": {
-                "value": "4",
-                "value_src": "auto"
-              },
-              "ADDR_WIDTH": {
-                "value": "64",
-                "value_src": "auto"
-              },
-              "AWUSER_WIDTH": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "ARUSER_WIDTH": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "WUSER_WIDTH": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "RUSER_WIDTH": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "BUSER_WIDTH": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "READ_WRITE_MODE": {
-                "value": "READ_WRITE",
-                "value_src": "constant"
-              },
-              "HAS_BURST": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_LOCK": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_PROT": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_CACHE": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_QOS": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_REGION": {
-                "value": "0",
-                "value_src": "constant"
-              },
-              "HAS_WSTRB": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_BRESP": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "HAS_RRESP": {
-                "value": "1",
-                "value_src": "constant"
-              },
-              "SUPPORTS_NARROW_BURST": {
-                "value": "1",
-                "value_src": "auto"
-              },
-              "NUM_READ_OUTSTANDING": {
-                "value": "2",
-                "value_src": "auto"
-              },
-              "NUM_WRITE_OUTSTANDING": {
-                "value": "2",
-                "value_src": "auto"
-              },
-              "MAX_BURST_LENGTH": {
-                "value": "256",
-                "value_src": "auto"
-              },
-              "CLK_DOMAIN": {
-                "value": "top_level_xdma_0_0_axi_aclk",
-                "value_src": "default_prop"
-              }
-            },
-            "address_space_ref": "M_AXI",
-            "base_address": {
-              "minimum": "0x00000000",
-              "maximum": "0xFFFFFFFFFFFFFFFF",
-              "width": "64"
-            },
-            "port_maps": {
-              "AWID": {
-                "physical_name": "M_AXI_AWID",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "AWADDR": {
-                "physical_name": "M_AXI_AWADDR",
-                "direction": "O",
-                "left": "63",
-                "right": "0"
-              },
-              "AWLEN": {
-                "physical_name": "M_AXI_AWLEN",
-                "direction": "O",
-                "left": "7",
-                "right": "0"
-              },
-              "AWSIZE": {
-                "physical_name": "M_AXI_AWSIZE",
-                "direction": "O",
-                "left": "2",
-                "right": "0"
-              },
-              "AWBURST": {
-                "physical_name": "M_AXI_AWBURST",
-                "direction": "O",
-                "left": "1",
-                "right": "0"
-              },
-              "AWLOCK": {
-                "physical_name": "M_AXI_AWLOCK",
-                "direction": "O"
-              },
-              "AWCACHE": {
-                "physical_name": "M_AXI_AWCACHE",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "AWPROT": {
-                "physical_name": "M_AXI_AWPROT",
-                "direction": "O",
-                "left": "2",
-                "right": "0"
-              },
-              "AWQOS": {
-                "physical_name": "M_AXI_AWQOS",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "AWVALID": {
-                "physical_name": "M_AXI_AWVALID",
-                "direction": "O"
-              },
-              "AWREADY": {
-                "physical_name": "M_AXI_AWREADY",
-                "direction": "I"
-              },
-              "WDATA": {
-                "physical_name": "M_AXI_WDATA",
-                "direction": "O",
-                "left": "511",
-                "right": "0"
-              },
-              "WSTRB": {
-                "physical_name": "M_AXI_WSTRB",
-                "direction": "O",
-                "left": "63",
-                "right": "0"
-              },
-              "WLAST": {
-                "physical_name": "M_AXI_WLAST",
-                "direction": "O"
-              },
-              "WVALID": {
-                "physical_name": "M_AXI_WVALID",
-                "direction": "O"
-              },
-              "WREADY": {
-                "physical_name": "M_AXI_WREADY",
-                "direction": "I"
-              },
-              "BID": {
-                "physical_name": "M_AXI_BID",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "BRESP": {
-                "physical_name": "M_AXI_BRESP",
-                "direction": "I",
-                "left": "1",
-                "right": "0"
-              },
-              "BVALID": {
-                "physical_name": "M_AXI_BVALID",
-                "direction": "I"
-              },
-              "BREADY": {
-                "physical_name": "M_AXI_BREADY",
-                "direction": "O"
-              },
-              "ARID": {
-                "physical_name": "M_AXI_ARID",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "ARADDR": {
-                "physical_name": "M_AXI_ARADDR",
-                "direction": "O",
-                "left": "63",
-                "right": "0"
-              },
-              "ARLEN": {
-                "physical_name": "M_AXI_ARLEN",
-                "direction": "O",
-                "left": "7",
-                "right": "0"
-              },
-              "ARSIZE": {
-                "physical_name": "M_AXI_ARSIZE",
-                "direction": "O",
-                "left": "2",
-                "right": "0"
-              },
-              "ARBURST": {
-                "physical_name": "M_AXI_ARBURST",
-                "direction": "O",
-                "left": "1",
-                "right": "0"
-              },
-              "ARLOCK": {
-                "physical_name": "M_AXI_ARLOCK",
-                "direction": "O"
-              },
-              "ARCACHE": {
-                "physical_name": "M_AXI_ARCACHE",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "ARPROT": {
-                "physical_name": "M_AXI_ARPROT",
-                "direction": "O",
-                "left": "2",
-                "right": "0"
-              },
-              "ARQOS": {
-                "physical_name": "M_AXI_ARQOS",
-                "direction": "O",
-                "left": "3",
-                "right": "0"
-              },
-              "ARVALID": {
-                "physical_name": "M_AXI_ARVALID",
-                "direction": "O"
-              },
-              "ARREADY": {
-                "physical_name": "M_AXI_ARREADY",
-                "direction": "I"
-              },
-              "RID": {
-                "physical_name": "M_AXI_RID",
-                "direction": "I",
-                "left": "3",
-                "right": "0"
-              },
-              "RDATA": {
-                "physical_name": "M_AXI_RDATA",
-                "direction": "I",
-                "left": "511",
-                "right": "0"
-              },
-              "RRESP": {
-                "physical_name": "M_AXI_RRESP",
-                "direction": "I",
-                "left": "1",
-                "right": "0"
-              },
-              "RLAST": {
-                "physical_name": "M_AXI_RLAST",
-                "direction": "I"
-              },
-              "RVALID": {
-                "physical_name": "M_AXI_RVALID",
-                "direction": "I"
-              },
-              "RREADY": {
-                "physical_name": "M_AXI_RREADY",
-                "direction": "O"
-              }
-            }
+            "vlnv": "xilinx.com:interface:aximm_rtl:1.0"
+          },
+          "S_AXI": {
+            "mode": "Slave",
+            "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
+            "vlnv": "xilinx.com:interface:aximm_rtl:1.0"
           }
         },
         "ports": {
           "clk": {
-            "type": "clk",
-            "direction": "I",
-            "parameters": {
-              "ASSOCIATED_BUSIF": {
-                "value": "M_AXI",
-                "value_src": "constant"
-              },
-              "ASSOCIATED_RESET": {
-                "value": "resetn",
-                "value_src": "constant"
-              },
-              "FREQ_HZ": {
-                "value": "250000000",
-                "value_src": "user_prop"
-              },
-              "CLK_DOMAIN": {
-                "value": "top_level_xdma_0_0_axi_aclk",
-                "value_src": "default_prop"
-              }
-            }
+            "direction": "I"
           },
           "resetn": {
-            "type": "rst",
-            "direction": "I",
-            "parameters": {
-              "POLARITY": {
-                "value": "ACTIVE_LOW",
-                "value_src": "constant"
-              }
-            }
+            "direction": "I"
           },
           "tick_stb": {
             "direction": "I"
@@ -2715,29 +2522,1204 @@
           },
           "spi_mosi1": {
             "direction": "I"
-          },
-          "sim_dac_values_0": {
-            "direction": "O",
-            "left": "127",
-            "right": "0"
-          },
-          "sim_dac_values_1": {
-            "direction": "O",
-            "left": "127",
-            "right": "0"
           }
         },
-        "addressing": {
-          "address_spaces": {
-            "M_AXI": {
-              "range": "16E",
-              "width": "64"
+        "components": {
+          "uw_recorder_out": {
+            "vlnv": "xilinx.com:module_ref:uw_recorder_s2:1.0",
+            "ip_revision": "1",
+            "xci_name": "top_level_uw_recorder_s2_0_0",
+            "xci_path": "ip/top_level_uw_recorder_s2_0_0/top_level_uw_recorder_s2_0_0.xci",
+            "inst_hier_path": "uw_recorder/uw_recorder_out",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_recorder_s2",
+              "boundary_crc": "0x0"
+            },
+            "interface_ports": {
+              "axis_in": {
+                "mode": "Slave",
+                "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+                "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+                "parameters": {
+                  "TDATA_NUM_BYTES": {
+                    "value": "64",
+                    "value_src": "constant"
+                  },
+                  "TDEST_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TID_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TREADY": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_TSTRB": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TKEEP": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TLAST": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                },
+                "port_maps": {
+                  "TDATA": {
+                    "physical_name": "axis_in_tdata",
+                    "direction": "I",
+                    "left": "511",
+                    "right": "0"
+                  },
+                  "TVALID": {
+                    "physical_name": "axis_in_tvalid",
+                    "direction": "I"
+                  },
+                  "TREADY": {
+                    "physical_name": "axis_in_tready",
+                    "direction": "O"
+                  }
+                }
+              },
+              "M_AXI": {
+                "mode": "Master",
+                "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
+                "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+                "parameters": {
+                  "DATA_WIDTH": {
+                    "value": "512",
+                    "value_src": "auto"
+                  },
+                  "PROTOCOL": {
+                    "value": "AXI4",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "ID_WIDTH": {
+                    "value": "4",
+                    "value_src": "auto"
+                  },
+                  "ADDR_WIDTH": {
+                    "value": "64",
+                    "value_src": "auto"
+                  },
+                  "AWUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "ARUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "WUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "RUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "BUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "READ_WRITE_MODE": {
+                    "value": "READ_WRITE",
+                    "value_src": "constant"
+                  },
+                  "HAS_BURST": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_LOCK": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_PROT": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_CACHE": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_QOS": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_REGION": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_WSTRB": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_BRESP": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_RRESP": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "SUPPORTS_NARROW_BURST": {
+                    "value": "1",
+                    "value_src": "auto"
+                  },
+                  "NUM_READ_OUTSTANDING": {
+                    "value": "2",
+                    "value_src": "auto"
+                  },
+                  "NUM_WRITE_OUTSTANDING": {
+                    "value": "2",
+                    "value_src": "auto"
+                  },
+                  "MAX_BURST_LENGTH": {
+                    "value": "256",
+                    "value_src": "auto"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                },
+                "address_space_ref": "M_AXI",
+                "base_address": {
+                  "minimum": "0x00000000",
+                  "maximum": "0xFFFFFFFFFFFFFFFF",
+                  "width": "64"
+                },
+                "port_maps": {
+                  "AWID": {
+                    "physical_name": "M_AXI_AWID",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "AWADDR": {
+                    "physical_name": "M_AXI_AWADDR",
+                    "direction": "O",
+                    "left": "63",
+                    "right": "0"
+                  },
+                  "AWLEN": {
+                    "physical_name": "M_AXI_AWLEN",
+                    "direction": "O",
+                    "left": "7",
+                    "right": "0"
+                  },
+                  "AWSIZE": {
+                    "physical_name": "M_AXI_AWSIZE",
+                    "direction": "O",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "AWBURST": {
+                    "physical_name": "M_AXI_AWBURST",
+                    "direction": "O",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "AWLOCK": {
+                    "physical_name": "M_AXI_AWLOCK",
+                    "direction": "O"
+                  },
+                  "AWCACHE": {
+                    "physical_name": "M_AXI_AWCACHE",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "AWPROT": {
+                    "physical_name": "M_AXI_AWPROT",
+                    "direction": "O",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "AWQOS": {
+                    "physical_name": "M_AXI_AWQOS",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "AWVALID": {
+                    "physical_name": "M_AXI_AWVALID",
+                    "direction": "O"
+                  },
+                  "AWREADY": {
+                    "physical_name": "M_AXI_AWREADY",
+                    "direction": "I"
+                  },
+                  "WDATA": {
+                    "physical_name": "M_AXI_WDATA",
+                    "direction": "O",
+                    "left": "511",
+                    "right": "0"
+                  },
+                  "WSTRB": {
+                    "physical_name": "M_AXI_WSTRB",
+                    "direction": "O",
+                    "left": "63",
+                    "right": "0"
+                  },
+                  "WLAST": {
+                    "physical_name": "M_AXI_WLAST",
+                    "direction": "O"
+                  },
+                  "WVALID": {
+                    "physical_name": "M_AXI_WVALID",
+                    "direction": "O"
+                  },
+                  "WREADY": {
+                    "physical_name": "M_AXI_WREADY",
+                    "direction": "I"
+                  },
+                  "BID": {
+                    "physical_name": "M_AXI_BID",
+                    "direction": "I",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "BRESP": {
+                    "physical_name": "M_AXI_BRESP",
+                    "direction": "I",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "BVALID": {
+                    "physical_name": "M_AXI_BVALID",
+                    "direction": "I"
+                  },
+                  "BREADY": {
+                    "physical_name": "M_AXI_BREADY",
+                    "direction": "O"
+                  },
+                  "ARID": {
+                    "physical_name": "M_AXI_ARID",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "ARADDR": {
+                    "physical_name": "M_AXI_ARADDR",
+                    "direction": "O",
+                    "left": "63",
+                    "right": "0"
+                  },
+                  "ARLEN": {
+                    "physical_name": "M_AXI_ARLEN",
+                    "direction": "O",
+                    "left": "7",
+                    "right": "0"
+                  },
+                  "ARSIZE": {
+                    "physical_name": "M_AXI_ARSIZE",
+                    "direction": "O",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "ARBURST": {
+                    "physical_name": "M_AXI_ARBURST",
+                    "direction": "O",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "ARLOCK": {
+                    "physical_name": "M_AXI_ARLOCK",
+                    "direction": "O"
+                  },
+                  "ARCACHE": {
+                    "physical_name": "M_AXI_ARCACHE",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "ARPROT": {
+                    "physical_name": "M_AXI_ARPROT",
+                    "direction": "O",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "ARQOS": {
+                    "physical_name": "M_AXI_ARQOS",
+                    "direction": "O",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "ARVALID": {
+                    "physical_name": "M_AXI_ARVALID",
+                    "direction": "O"
+                  },
+                  "ARREADY": {
+                    "physical_name": "M_AXI_ARREADY",
+                    "direction": "I"
+                  },
+                  "RID": {
+                    "physical_name": "M_AXI_RID",
+                    "direction": "I",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "RDATA": {
+                    "physical_name": "M_AXI_RDATA",
+                    "direction": "I",
+                    "left": "511",
+                    "right": "0"
+                  },
+                  "RRESP": {
+                    "physical_name": "M_AXI_RRESP",
+                    "direction": "I",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "RLAST": {
+                    "physical_name": "M_AXI_RLAST",
+                    "direction": "I"
+                  },
+                  "RVALID": {
+                    "physical_name": "M_AXI_RVALID",
+                    "direction": "I"
+                  },
+                  "RREADY": {
+                    "physical_name": "M_AXI_RREADY",
+                    "direction": "O"
+                  }
+                }
+              }
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_BUSIF": {
+                    "value": "M_AXI:axis_in",
+                    "value_src": "constant"
+                  },
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "host_buff_addr": {
+                "direction": "I",
+                "left": "63",
+                "right": "0"
+              },
+              "recording": {
+                "direction": "I"
+              },
+              "fifo_entries": {
+                "direction": "I",
+                "left": "15",
+                "right": "0"
+              }
+            },
+            "addressing": {
+              "address_spaces": {
+                "M_AXI": {
+                  "range": "16E",
+                  "width": "64"
+                }
+              }
             }
+          },
+          "uw_recorder_in": {
+            "vlnv": "xilinx.com:module_ref:uw_recorder_s1:1.0",
+            "ip_revision": "1",
+            "xci_name": "top_level_uw_recorder_s1_0_0",
+            "xci_path": "ip/top_level_uw_recorder_s1_0_0/top_level_uw_recorder_s1_0_0.xci",
+            "inst_hier_path": "uw_recorder/uw_recorder_in",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_recorder_s1",
+              "boundary_crc": "0x0"
+            },
+            "interface_ports": {
+              "axis_out": {
+                "mode": "Master",
+                "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+                "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+                "parameters": {
+                  "TDATA_NUM_BYTES": {
+                    "value": "64",
+                    "value_src": "constant"
+                  },
+                  "TDEST_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TID_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TREADY": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_TSTRB": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TKEEP": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TLAST": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                },
+                "port_maps": {
+                  "TDATA": {
+                    "physical_name": "axis_out_tdata",
+                    "direction": "O",
+                    "left": "511",
+                    "right": "0"
+                  },
+                  "TVALID": {
+                    "physical_name": "axis_out_tvalid",
+                    "direction": "O"
+                  },
+                  "TREADY": {
+                    "physical_name": "axis_out_tready",
+                    "direction": "I"
+                  }
+                }
+              }
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_BUSIF": {
+                    "value": "axis_out",
+                    "value_src": "constant"
+                  },
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "host_buff_size": {
+                "direction": "I",
+                "left": "63",
+                "right": "0"
+              },
+              "tick_stb": {
+                "direction": "I"
+              },
+              "tick_count": {
+                "direction": "I",
+                "left": "15",
+                "right": "0"
+              },
+              "liq_sw": {
+                "direction": "I"
+              },
+              "vpretop_sw": {
+                "direction": "I"
+              },
+              "vprebot_sw": {
+                "direction": "I"
+              },
+              "refp_sw": {
+                "direction": "I"
+              },
+              "refn_sw": {
+                "direction": "I"
+              },
+              "glb_pre_sw": {
+                "direction": "I"
+              },
+              "rs0": {
+                "direction": "I"
+              },
+              "rs256": {
+                "direction": "I"
+              },
+              "pre0": {
+                "direction": "I"
+              },
+              "pre256": {
+                "direction": "I"
+              },
+              "sim_dac_values_0": {
+                "direction": "I",
+                "left": "127",
+                "right": "0"
+              },
+              "sim_dac_values_1": {
+                "direction": "I",
+                "left": "127",
+                "right": "0"
+              },
+              "fifo_entries": {
+                "direction": "O",
+                "left": "15",
+                "right": "0"
+              },
+              "recording": {
+                "direction": "O"
+              }
+            }
+          },
+          "uw_sim_ltc2656_0": {
+            "vlnv": "xilinx.com:module_ref:uw_sim_ltc2656:1.0",
+            "ip_revision": "1",
+            "xci_name": "top_level_uw_sim_ltc2656_0_0",
+            "xci_path": "ip/top_level_uw_sim_ltc2656_0_0/top_level_uw_sim_ltc2656_0_0.xci",
+            "inst_hier_path": "uw_recorder/uw_sim_ltc2656_0",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_sim_ltc2656",
+              "boundary_crc": "0x0"
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "spi_csld": {
+                "direction": "I"
+              },
+              "spi_sck": {
+                "direction": "I"
+              },
+              "spi_mosi": {
+                "direction": "I"
+              },
+              "internal_vref": {
+                "direction": "O"
+              },
+              "dac_output": {
+                "direction": "O",
+                "left": "127",
+                "right": "0"
+              }
+            }
+          },
+          "uw_sim_ltc2656_1": {
+            "vlnv": "xilinx.com:module_ref:uw_sim_ltc2656:1.0",
+            "ip_revision": "1",
+            "xci_name": "top_level_uw_sim_ltc2656_0_1",
+            "xci_path": "ip/top_level_uw_sim_ltc2656_0_1/top_level_uw_sim_ltc2656_0_1.xci",
+            "inst_hier_path": "uw_recorder/uw_sim_ltc2656_1",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_sim_ltc2656",
+              "boundary_crc": "0x0"
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "spi_csld": {
+                "direction": "I"
+              },
+              "spi_sck": {
+                "direction": "I"
+              },
+              "spi_mosi": {
+                "direction": "I"
+              },
+              "internal_vref": {
+                "direction": "O"
+              },
+              "dac_output": {
+                "direction": "O",
+                "left": "127",
+                "right": "0"
+              }
+            }
+          },
+          "uw_recorder_ctl": {
+            "vlnv": "xilinx.com:module_ref:uw_recorder_ctl:1.0",
+            "ip_revision": "1",
+            "xci_name": "top_level_uw_recorder_ctl_0_1",
+            "xci_path": "ip/top_level_uw_recorder_ctl_0_1/top_level_uw_recorder_ctl_0_1.xci",
+            "inst_hier_path": "uw_recorder/uw_recorder_ctl",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_recorder_ctl",
+              "boundary_crc": "0x0"
+            },
+            "interface_ports": {
+              "S_AXI": {
+                "mode": "Slave",
+                "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
+                "vlnv": "xilinx.com:interface:aximm_rtl:1.0",
+                "parameters": {
+                  "DATA_WIDTH": {
+                    "value": "32",
+                    "value_src": "constant"
+                  },
+                  "PROTOCOL": {
+                    "value": "AXI4LITE",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "ID_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "ADDR_WIDTH": {
+                    "value": "8",
+                    "value_src": "auto"
+                  },
+                  "AWUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "ARUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "WUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "RUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "BUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "READ_WRITE_MODE": {
+                    "value": "READ_WRITE",
+                    "value_src": "constant"
+                  },
+                  "HAS_BURST": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_LOCK": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_PROT": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_CACHE": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_QOS": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_REGION": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_WSTRB": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_BRESP": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_RRESP": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "SUPPORTS_NARROW_BURST": {
+                    "value": "0",
+                    "value_src": "auto"
+                  },
+                  "NUM_READ_OUTSTANDING": {
+                    "value": "1",
+                    "value_src": "auto"
+                  },
+                  "NUM_WRITE_OUTSTANDING": {
+                    "value": "1",
+                    "value_src": "auto"
+                  },
+                  "MAX_BURST_LENGTH": {
+                    "value": "1",
+                    "value_src": "auto"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  },
+                  "NUM_READ_THREADS": {
+                    "value": "1",
+                    "value_src": "user_prop"
+                  },
+                  "NUM_WRITE_THREADS": {
+                    "value": "1",
+                    "value_src": "user_prop"
+                  },
+                  "RUSER_BITS_PER_BYTE": {
+                    "value": "0",
+                    "value_src": "user_prop"
+                  },
+                  "WUSER_BITS_PER_BYTE": {
+                    "value": "0",
+                    "value_src": "user_prop"
+                  }
+                },
+                "memory_map_ref": "S_AXI",
+                "port_maps": {
+                  "AWADDR": {
+                    "physical_name": "S_AXI_AWADDR",
+                    "direction": "I",
+                    "left": "7",
+                    "right": "0"
+                  },
+                  "AWPROT": {
+                    "physical_name": "S_AXI_AWPROT",
+                    "direction": "I",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "AWVALID": {
+                    "physical_name": "S_AXI_AWVALID",
+                    "direction": "I"
+                  },
+                  "AWREADY": {
+                    "physical_name": "S_AXI_AWREADY",
+                    "direction": "O"
+                  },
+                  "WDATA": {
+                    "physical_name": "S_AXI_WDATA",
+                    "direction": "I",
+                    "left": "31",
+                    "right": "0"
+                  },
+                  "WSTRB": {
+                    "physical_name": "S_AXI_WSTRB",
+                    "direction": "I",
+                    "left": "3",
+                    "right": "0"
+                  },
+                  "WVALID": {
+                    "physical_name": "S_AXI_WVALID",
+                    "direction": "I"
+                  },
+                  "WREADY": {
+                    "physical_name": "S_AXI_WREADY",
+                    "direction": "O"
+                  },
+                  "BRESP": {
+                    "physical_name": "S_AXI_BRESP",
+                    "direction": "O",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "BVALID": {
+                    "physical_name": "S_AXI_BVALID",
+                    "direction": "O"
+                  },
+                  "BREADY": {
+                    "physical_name": "S_AXI_BREADY",
+                    "direction": "I"
+                  },
+                  "ARADDR": {
+                    "physical_name": "S_AXI_ARADDR",
+                    "direction": "I",
+                    "left": "7",
+                    "right": "0"
+                  },
+                  "ARPROT": {
+                    "physical_name": "S_AXI_ARPROT",
+                    "direction": "I",
+                    "left": "2",
+                    "right": "0"
+                  },
+                  "ARVALID": {
+                    "physical_name": "S_AXI_ARVALID",
+                    "direction": "I"
+                  },
+                  "ARREADY": {
+                    "physical_name": "S_AXI_ARREADY",
+                    "direction": "O"
+                  },
+                  "RDATA": {
+                    "physical_name": "S_AXI_RDATA",
+                    "direction": "O",
+                    "left": "31",
+                    "right": "0"
+                  },
+                  "RRESP": {
+                    "physical_name": "S_AXI_RRESP",
+                    "direction": "O",
+                    "left": "1",
+                    "right": "0"
+                  },
+                  "RVALID": {
+                    "physical_name": "S_AXI_RVALID",
+                    "direction": "O"
+                  },
+                  "RREADY": {
+                    "physical_name": "S_AXI_RREADY",
+                    "direction": "I"
+                  }
+                }
+              }
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_BUSIF": {
+                    "value": "S_AXI",
+                    "value_src": "constant"
+                  },
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "default_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "host_buff_addr": {
+                "direction": "O",
+                "left": "63",
+                "right": "0"
+              },
+              "host_buff_size": {
+                "direction": "O",
+                "left": "63",
+                "right": "0"
+              }
+            }
+          }
+        },
+        "interface_nets": {
+          "S_AXI_1": {
+            "interface_ports": [
+              "S_AXI",
+              "uw_recorder_ctl/S_AXI"
+            ]
+          },
+          "uw_recorder_s1_0_axis_out": {
+            "interface_ports": [
+              "uw_recorder_in/axis_out",
+              "uw_recorder_out/axis_in"
+            ]
+          },
+          "uw_recorder_s2_0_M_AXI": {
+            "interface_ports": [
+              "M_AXI",
+              "uw_recorder_out/M_AXI"
+            ]
+          }
+        },
+        "nets": {
+          "clk_1": {
+            "ports": [
+              "clk",
+              "uw_sim_ltc2656_0/clk",
+              "uw_sim_ltc2656_1/clk",
+              "uw_recorder_in/clk",
+              "uw_recorder_out/clk",
+              "uw_recorder_ctl/clk"
+            ]
+          },
+          "glb_pre_sw_1": {
+            "ports": [
+              "glb_pre_sw",
+              "uw_recorder_in/glb_pre_sw"
+            ]
+          },
+          "liq_sw_1": {
+            "ports": [
+              "liq_sw",
+              "uw_recorder_in/liq_sw"
+            ]
+          },
+          "pre0_1": {
+            "ports": [
+              "pre0",
+              "uw_recorder_in/pre0"
+            ]
+          },
+          "pre256_1": {
+            "ports": [
+              "pre256",
+              "uw_recorder_in/pre256"
+            ]
+          },
+          "refn_sw_1": {
+            "ports": [
+              "refn_sw",
+              "uw_recorder_in/refn_sw"
+            ]
+          },
+          "refp_sw_1": {
+            "ports": [
+              "refp_sw",
+              "uw_recorder_in/refp_sw"
+            ]
+          },
+          "resetn_1": {
+            "ports": [
+              "resetn",
+              "uw_sim_ltc2656_0/resetn",
+              "uw_sim_ltc2656_1/resetn",
+              "uw_recorder_in/resetn",
+              "uw_recorder_out/resetn",
+              "uw_recorder_ctl/resetn"
+            ]
+          },
+          "rs0_1": {
+            "ports": [
+              "rs0",
+              "uw_recorder_in/rs0"
+            ]
+          },
+          "rs256_1": {
+            "ports": [
+              "rs256",
+              "uw_recorder_in/rs256"
+            ]
+          },
+          "spi_csld_1": {
+            "ports": [
+              "spi_csld",
+              "uw_sim_ltc2656_0/spi_csld",
+              "uw_sim_ltc2656_1/spi_csld"
+            ]
+          },
+          "spi_mosi0_1": {
+            "ports": [
+              "spi_mosi0",
+              "uw_sim_ltc2656_0/spi_mosi"
+            ]
+          },
+          "spi_mosi1_1": {
+            "ports": [
+              "spi_mosi1",
+              "uw_sim_ltc2656_1/spi_mosi"
+            ]
+          },
+          "spi_sck_1": {
+            "ports": [
+              "spi_sck",
+              "uw_sim_ltc2656_0/spi_sck",
+              "uw_sim_ltc2656_1/spi_sck"
+            ]
+          },
+          "tick_count_1": {
+            "ports": [
+              "tick_count",
+              "uw_recorder_in/tick_count"
+            ]
+          },
+          "tick_stb_1": {
+            "ports": [
+              "tick_stb",
+              "uw_recorder_in/tick_stb"
+            ]
+          },
+          "uw_recorder_ctl_host_buff_addr": {
+            "ports": [
+              "uw_recorder_ctl/host_buff_addr",
+              "uw_recorder_out/host_buff_addr"
+            ]
+          },
+          "uw_recorder_ctl_host_buff_size": {
+            "ports": [
+              "uw_recorder_ctl/host_buff_size",
+              "uw_recorder_in/host_buff_size"
+            ]
+          },
+          "uw_recorder_s1_0_fifo_entries": {
+            "ports": [
+              "uw_recorder_in/fifo_entries",
+              "uw_recorder_out/fifo_entries"
+            ]
+          },
+          "uw_recorder_s1_0_recording": {
+            "ports": [
+              "uw_recorder_in/recording",
+              "uw_recorder_out/recording"
+            ]
+          },
+          "uw_sim_ltc2656_0_dac_output": {
+            "ports": [
+              "uw_sim_ltc2656_0/dac_output",
+              "uw_recorder_in/sim_dac_values_0"
+            ]
+          },
+          "uw_sim_ltc2656_1_dac_output": {
+            "ports": [
+              "uw_sim_ltc2656_1/dac_output",
+              "uw_recorder_in/sim_dac_values_1"
+            ]
+          },
+          "vprebot_sw_1": {
+            "ports": [
+              "vprebot_sw",
+              "uw_recorder_in/vprebot_sw"
+            ]
+          },
+          "vpretop_sw_1": {
+            "ports": [
+              "vpretop_sw",
+              "uw_recorder_in/vpretop_sw"
+            ]
           }
         }
       }
     },
     "interface_nets": {
+      "hier_0_M_AXI": {
+        "interface_ports": [
+          "uw_recorder/M_AXI",
+          "pcie/S01_AXI"
+        ]
+      },
       "pcie_refclk_1": {
         "interface_ports": [
           "pcie0_refclk",
@@ -2750,10 +3732,10 @@
           "smartconnect/M00_AXI"
         ]
       },
-      "uw_recorder_0_M_AXI": {
+      "smartconnect_M01_AXI": {
         "interface_ports": [
-          "uw_recorder/M_AXI",
-          "pcie/S01_AXI"
+          "smartconnect/M01_AXI",
+          "uw_recorder/S_AXI"
         ]
       },
       "uwfetcher_0_M_AXI": {
@@ -2776,10 +3758,34 @@
       }
     },
     "nets": {
+      "glb_pre_sw_1": {
+        "ports": [
+          "uw_engine/glb_pre_sw",
+          "uw_recorder/glb_pre_sw"
+        ]
+      },
+      "liq_sw_1": {
+        "ports": [
+          "uw_engine/liq_sw",
+          "uw_recorder/liq_sw"
+        ]
+      },
       "pcie_perst_l_1": {
         "ports": [
           "pcie_perst_l",
           "pcie/pcie_perst_l"
+        ]
+      },
+      "refn_sw_1": {
+        "ports": [
+          "uw_engine/refn_sw",
+          "uw_recorder/refn_sw"
+        ]
+      },
+      "refp_sw_1": {
+        "ports": [
+          "uw_engine/refp_sw",
+          "uw_recorder/refp_sw"
         ]
       },
       "source_200Mhz_clk": {
@@ -2799,103 +3805,79 @@
           "uw_recorder/resetn"
         ]
       },
+      "tick_count_1": {
+        "ports": [
+          "uw_engine/tick_count",
+          "uw_recorder/tick_count"
+        ]
+      },
       "tick_src_tick": {
         "ports": [
           "tick_src/tick",
           "uw_engine/pa_sync"
         ]
       },
-      "userwave_glb_pre_sw": {
-        "ports": [
-          "uw_engine/glb_pre_sw",
-          "uw_recorder/glb_pre_sw"
-        ]
-      },
-      "userwave_liq_sw": {
-        "ports": [
-          "uw_engine/liq_sw",
-          "uw_recorder/liq_sw"
-        ]
-      },
-      "userwave_pre0": {
-        "ports": [
-          "uw_engine/pre0",
-          "uw_recorder/pre0"
-        ]
-      },
-      "userwave_pre256": {
-        "ports": [
-          "uw_engine/pre256",
-          "uw_recorder/pre256"
-        ]
-      },
-      "userwave_refn_sw": {
-        "ports": [
-          "uw_engine/refn_sw",
-          "uw_recorder/refn_sw"
-        ]
-      },
-      "userwave_refp_sw": {
-        "ports": [
-          "uw_engine/refp_sw",
-          "uw_recorder/refp_sw"
-        ]
-      },
-      "userwave_row_tick_stb": {
+      "tick_stb_1": {
         "ports": [
           "uw_engine/row_tick_stb",
           "uw_recorder/tick_stb"
         ]
       },
-      "userwave_rs0": {
+      "uw_engine_pre0": {
+        "ports": [
+          "uw_engine/pre0",
+          "uw_recorder/pre0"
+        ]
+      },
+      "uw_engine_pre256": {
+        "ports": [
+          "uw_engine/pre256",
+          "uw_recorder/pre256"
+        ]
+      },
+      "uw_engine_rs0": {
         "ports": [
           "uw_engine/rs0",
           "uw_recorder/rs0"
         ]
       },
-      "userwave_rs256": {
+      "uw_engine_rs256": {
         "ports": [
           "uw_engine/rs256",
           "uw_recorder/rs256"
         ]
       },
-      "userwave_spi_csld": {
+      "uw_engine_spi_csld": {
         "ports": [
           "uw_engine/spi_csld",
           "uw_recorder/spi_csld"
         ]
       },
-      "userwave_spi_mosi0": {
+      "uw_engine_spi_mosi0": {
         "ports": [
           "uw_engine/spi_mosi0",
           "uw_recorder/spi_mosi0"
         ]
       },
-      "userwave_spi_mosi1": {
+      "uw_engine_spi_mosi1": {
         "ports": [
           "uw_engine/spi_mosi1",
           "uw_recorder/spi_mosi1"
         ]
       },
-      "userwave_spi_sck": {
+      "uw_engine_spi_sck": {
         "ports": [
           "uw_engine/spi_sck",
           "uw_recorder/spi_sck"
         ]
       },
-      "userwave_tick_count": {
-        "ports": [
-          "uw_engine/tick_count",
-          "uw_recorder/tick_count"
-        ]
-      },
-      "userwave_vprebot_sw": {
+      "vprebot_sw_1": {
         "ports": [
           "uw_engine/vprebot_sw",
           "uw_recorder/vprebot_sw"
         ]
       },
-      "userwave_vpretop_sw": {
+      "vpretop_sw_1": {
         "ports": [
           "uw_engine/vpretop_sw",
           "uw_recorder/vpretop_sw"
@@ -2916,6 +3898,11 @@
               "SEG_uw_ctl_reg0": {
                 "address_block": "/uw_engine/uw_ctl/S_AXI/reg0",
                 "offset": "0x0000000000001000",
+                "range": "4K"
+              },
+              "SEG_uw_recorder_ctl_reg0": {
+                "address_block": "/uw_recorder/uw_recorder_ctl/S_AXI/reg0",
+                "offset": "0x0000000000002000",
                 "range": "4K"
               }
             }
@@ -2952,7 +3939,7 @@
           }
         }
       },
-      "/uw_recorder": {
+      "/uw_recorder/uw_recorder_out": {
         "address_spaces": {
           "M_AXI": {
             "segments": {

@@ -231,10 +231,10 @@
                 "BP": "axibar_0",
                 "HP": "axibar_highaddr_0",
                 "MA": "M_AXI",
-                "MX": "/uw_recorder",
+                "MX": "/uw_recorder/uw_recorder_out",
                 "MI": "M_AXI",
                 "MS": "SEG_pcie_bridge_BAR0",
-                "MV": "xilinx.com:module_ref:uw_recorder:1.0",
+                "MV": "xilinx.com:module_ref:uw_recorder_s2:1.0",
                 "SX": "/pcie/pcie_bridge",
                 "SI": "S_AXI_B",
                 "SS": "BAR0",
@@ -257,6 +257,24 @@
                 "SI": "S_AXI",
                 "SS": "reg0",
                 "SV": "xilinx.com:module_ref:uw_ctl:1.0",
+                "TM": "both",
+                "TU": "register"
+            },
+            "V7": {
+                "VT": "AC",
+                "BA": "0x0000000000002000",
+                "HA": "0x0000000000002FFF",
+                "BP": "C_BASEADDR",
+                "HP": "C_HIGHADDR",
+                "MA": "M_AXI_B",
+                "MX": "/pcie/pcie_bridge",
+                "MI": "M_AXI_B",
+                "MS": "SEG_uw_recorder_ctl_reg0",
+                "MV": "xilinx.com:ip:xdma:4.1",
+                "SX": "/uw_recorder/uw_recorder_ctl",
+                "SI": "S_AXI",
+                "SS": "reg0",
+                "SV": "xilinx.com:module_ref:uw_recorder_ctl:1.0",
                 "TM": "both",
                 "TU": "register"
             }
@@ -287,6 +305,11 @@
             },
             {
                 "src": "V6",
+                "trg": "V2",
+                "EH": "2"
+            },
+            {
+                "src": "V7",
                 "trg": "V2",
                 "EH": "2"
             }

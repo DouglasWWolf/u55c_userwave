@@ -7,48 +7,49 @@
    "No Loops_ExpandedHierarchyInLayout":"",
    "No Loops_Layout":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0 TLS
 #  -string -flagsOSRD
-preplace port pcie0_refclk -pg 1 -lvl 0 -x 0 -y 80 -defaultsOSRD
-preplace port pcie_mgt -pg 1 -lvl 0 -x 0 -y 60 -defaultsOSRD -left
-preplace port port-id_pcie_perst_l -pg 1 -lvl 0 -x 0 -y 100 -defaultsOSRD
-preplace portBus hbm_cattrip -pg 1 -lvl 5 -x 1260 -y 800 -defaultsOSRD
-preplace inst pcie -pg 1 -lvl 2 -x 460 -y 40 -swap {44 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 0 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122} -defaultsOSRD -pinDir M_AXI_B right -pinY M_AXI_B 90R -pinDir pcie_mgt left -pinY pcie_mgt 20L -pinDir pcie_refclk left -pinY pcie_refclk 40L -pinDir S00_AXI right -pinY S00_AXI 30R -pinDir S01_AXI left -pinY S01_AXI 120L -pinDir axi_aclk right -pinY axi_aclk 110R -pinBusDir axi_aresetn right -pinBusY axi_aresetn 130R -pinDir pcie_perst_l left -pinY pcie_perst_l 140L
-preplace inst smartconnect -pg 1 -lvl 3 -x 760 -y 110 -defaultsOSRD -pinDir S00_AXI left -pinY S00_AXI 20L -pinDir M00_AXI right -pinY M00_AXI 20R -pinDir aclk left -pinY aclk 40L -pinDir aresetn left -pinY aresetn 60L
-preplace inst zero -pg 1 -lvl 4 -x 1070 -y 780 -defaultsOSRD -pinBusDir dout right -pinBusY dout 20R
-preplace inst uw_engine -pg 1 -lvl 4 -x 1070 -y 50 -swap {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 73 74 75 76 63 62 64 65 66 67 68 71 72 69 70 60 61 77} -defaultsOSRD -pinDir M_AXI left -pinY M_AXI 20L -pinDir S_AXI left -pinY S_AXI 80L -pinDir clk left -pinY clk 180L -pinDir resetn left -pinY resetn 200L -pinDir spi_csld left -pinY spi_csld 560L -pinDir spi_sck left -pinY spi_sck 580L -pinDir spi_mosi0 left -pinY spi_mosi0 620L -pinDir spi_mosi1 left -pinY spi_mosi1 660L -pinDir liq_sw left -pinY liq_sw 360L -pinBusDir tick_count left -pinBusY tick_count 340L -pinDir vpretop_sw left -pinY vpretop_sw 380L -pinDir vprebot_sw left -pinY vprebot_sw 400L -pinDir refp_sw left -pinY refp_sw 420L -pinDir refn_sw left -pinY refn_sw 440L -pinDir glb_pre_sw left -pinY glb_pre_sw 460L -pinDir pre0 left -pinY pre0 520L -pinDir pre256 left -pinY pre256 540L -pinDir rs0 left -pinY rs0 480L -pinDir rs256 left -pinY rs256 500L -pinDir pa_sync left -pinY pa_sync 260L -pinDir row_tick_stb left -pinY row_tick_stb 320L -pinDir smem_access_enable right -pinY smem_access_enable 20R
-preplace inst tick_src -pg 1 -lvl 3 -x 760 -y 290 -defaultsOSRD -pinDir clk left -pinY clk 20L -pinDir tick right -pinY tick 20R
-preplace inst uw_recorder -pg 1 -lvl 1 -x 170 -y 140 -swap {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 55 57 54 56} -defaultsOSRD -pinDir M_AXI right -pinY M_AXI 20R -pinDir clk right -pinY clk 90R -pinDir resetn right -pinY resetn 110R -pinDir tick_stb right -pinY tick_stb 230R -pinBusDir tick_count right -pinBusY tick_count 250R -pinDir liq_sw right -pinY liq_sw 270R -pinDir vpretop_sw right -pinY vpretop_sw 290R -pinDir vprebot_sw right -pinY vprebot_sw 310R -pinDir refp_sw right -pinY refp_sw 330R -pinDir refn_sw right -pinY refn_sw 350R -pinDir glb_pre_sw right -pinY glb_pre_sw 370R -pinDir rs0 right -pinY rs0 390R -pinDir rs256 right -pinY rs256 410R -pinDir pre0 right -pinY pre0 430R -pinDir pre256 right -pinY pre256 450R -pinDir spi_csld right -pinY spi_csld 470R -pinDir spi_sck right -pinY spi_sck 490R -pinDir spi_mosi0 right -pinY spi_mosi0 530R -pinDir spi_mosi1 right -pinY spi_mosi1 570R -pinBusDir sim_dac_values_0 right -pinBusY sim_dac_values_0 510R -pinBusDir sim_dac_values_1 right -pinBusY sim_dac_values_1 550R
-preplace netloc pcie_perst_l_1 1 0 2 NJ 100 320J
-preplace netloc source_200Mhz_clk 1 1 3 N 230 620 230 N
-preplace netloc source_200Mhz_resetn 1 1 3 N 250 600 250 N
-preplace netloc tick_src_tick 1 3 1 N 310
-preplace netloc userwave_glb_pre_sw 1 1 3 NJ 510 NJ 510 N
-preplace netloc userwave_liq_sw 1 1 3 NJ 410 NJ 410 N
-preplace netloc userwave_pre0 1 1 3 NJ 570 NJ 570 N
-preplace netloc userwave_pre256 1 1 3 NJ 590 NJ 590 N
-preplace netloc userwave_refn_sw 1 1 3 NJ 490 NJ 490 N
-preplace netloc userwave_refp_sw 1 1 3 NJ 470 NJ 470 N
-preplace netloc userwave_row_tick_stb 1 1 3 NJ 370 NJ 370 N
-preplace netloc userwave_rs0 1 1 3 NJ 530 NJ 530 N
-preplace netloc userwave_rs256 1 1 3 NJ 550 NJ 550 N
-preplace netloc userwave_spi_csld 1 1 3 NJ 610 NJ 610 N
-preplace netloc userwave_spi_mosi0 1 1 3 NJ 670 NJ 670 N
-preplace netloc userwave_spi_mosi1 1 1 3 NJ 710 NJ 710 N
-preplace netloc userwave_spi_sck 1 1 3 NJ 630 NJ 630 N
-preplace netloc userwave_tick_count 1 1 3 NJ 390 NJ 390 N
-preplace netloc userwave_vprebot_sw 1 1 3 NJ 450 NJ 450 N
-preplace netloc userwave_vpretop_sw 1 1 3 NJ 430 NJ 430 N
-preplace netloc zero_dout 1 4 1 NJ 800
-preplace netloc pcie_refclk_1 1 0 2 NJ 80 NJ
-preplace netloc smartconnect_M00_AXI 1 3 1 N 130
-preplace netloc uw_recorder_0_M_AXI 1 1 1 N 160
-preplace netloc uwfetcher_0_M_AXI 1 2 2 NJ 70 N
-preplace netloc xdma_0_M_AXI_B 1 2 1 N 130
-preplace netloc xdma_0_pcie_mgt 1 0 2 NJ 60 NJ
-levelinfo -pg 1 0 170 460 760 1070 1260
-pagesize -pg 1 -db -bbox -sgen -140 0 1430 860
+preplace port pcie0_refclk -pg 1 -lvl 0 -x 0 -y 240 -defaultsOSRD
+preplace port pcie_mgt -pg 1 -lvl 0 -x 0 -y 220 -defaultsOSRD -left
+preplace port port-id_pcie_perst_l -pg 1 -lvl 0 -x 0 -y 260 -defaultsOSRD
+preplace portBus hbm_cattrip -pg 1 -lvl 4 -x 1240 -y 860 -defaultsOSRD
+preplace inst pcie -pg 1 -lvl 1 -x 160 -y 200 -swap {44 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 0 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 121 120 122} -defaultsOSRD -pinDir M_AXI_B right -pinY M_AXI_B 120R -pinDir pcie_mgt left -pinY pcie_mgt 20L -pinDir pcie_refclk left -pinY pcie_refclk 40L -pinDir S00_AXI right -pinY S00_AXI 20R -pinDir S01_AXI right -pinY S01_AXI 330R -pinDir axi_aclk right -pinY axi_aclk 370R -pinBusDir axi_aresetn right -pinBusY axi_aresetn 350R -pinDir pcie_perst_l left -pinY pcie_perst_l 60L
+preplace inst smartconnect -pg 1 -lvl 2 -x 460 -y 300 -swap {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 79 78} -defaultsOSRD -pinDir S00_AXI left -pinY S00_AXI 20L -pinDir M00_AXI right -pinY M00_AXI 20R -pinDir M01_AXI right -pinY M01_AXI 170R -pinDir aclk left -pinY aclk 60L -pinDir aresetn left -pinY aresetn 40L
+preplace inst zero -pg 1 -lvl 3 -x 780 -y 840 -defaultsOSRD -pinBusDir dout right -pinBusY dout 20R
+preplace inst uw_engine -pg 1 -lvl 3 -x 780 -y 40 -swap {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 59 58 61 62 63 64 65 66 67 68 69 70 71 72 73 74 76 75 77 60} -defaultsOSRD -pinDir M_AXI left -pinY M_AXI 180L -pinDir S_AXI left -pinY S_AXI 280L -pinDir clk left -pinY clk 320L -pinDir resetn left -pinY resetn 300L -pinDir spi_csld right -pinY spi_csld 40R -pinDir spi_sck right -pinY spi_sck 60R -pinDir spi_mosi0 right -pinY spi_mosi0 80R -pinDir spi_mosi1 right -pinY spi_mosi1 100R -pinDir liq_sw right -pinY liq_sw 120R -pinBusDir tick_count right -pinBusY tick_count 140R -pinDir vpretop_sw right -pinY vpretop_sw 160R -pinDir vprebot_sw right -pinY vprebot_sw 180R -pinDir refp_sw right -pinY refp_sw 200R -pinDir refn_sw right -pinY refn_sw 220R -pinDir glb_pre_sw right -pinY glb_pre_sw 240R -pinDir pre0 right -pinY pre0 260R -pinDir pre256 right -pinY pre256 280R -pinDir rs0 right -pinY rs0 300R -pinDir rs256 right -pinY rs256 320R -pinDir pa_sync left -pinY pa_sync 340L -pinDir row_tick_stb right -pinY row_tick_stb 340R -pinDir smem_access_enable right -pinY smem_access_enable 20R
+preplace inst tick_src -pg 1 -lvl 2 -x 460 -y 570 -defaultsOSRD -pinDir clk left -pinY clk 20L -pinDir tick right -pinY tick 20R
+preplace inst uw_recorder -pg 1 -lvl 3 -x 780 -y 450 -swap {38 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 0 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 59 58 60 70 71 69 68 67 66 65 62 61 64 63 75 74 73 72} -defaultsOSRD -pinDir M_AXI left -pinY M_AXI 80L -pinDir S_AXI left -pinY S_AXI 20L -pinDir clk left -pinY clk 120L -pinDir resetn left -pinY resetn 100L -pinDir tick_stb right -pinY tick_stb 20R -pinBusDir tick_count right -pinBusY tick_count 220R -pinDir liq_sw right -pinY liq_sw 240R -pinDir vpretop_sw right -pinY vpretop_sw 200R -pinDir vprebot_sw right -pinY vprebot_sw 180R -pinDir refp_sw right -pinY refp_sw 160R -pinDir refn_sw right -pinY refn_sw 140R -pinDir glb_pre_sw right -pinY glb_pre_sw 120R -pinDir rs0 right -pinY rs0 60R -pinDir rs256 right -pinY rs256 40R -pinDir pre0 right -pinY pre0 100R -pinDir pre256 right -pinY pre256 80R -pinDir spi_csld right -pinY spi_csld 320R -pinDir spi_sck right -pinY spi_sck 300R -pinDir spi_mosi0 right -pinY spi_mosi0 280R -pinDir spi_mosi1 right -pinY spi_mosi1 260R
+preplace netloc glb_pre_sw_1 1 3 1 1020 280n
+preplace netloc liq_sw_1 1 3 1 1140 160n
+preplace netloc pcie_perst_l_1 1 0 1 NJ 260
+preplace netloc refn_sw_1 1 3 1 1040 260n
+preplace netloc refp_sw_1 1 3 1 1060 240n
+preplace netloc source_200Mhz_clk 1 1 2 320 260 600
+preplace netloc source_200Mhz_resetn 1 1 2 300 240 640
+preplace netloc tick_count_1 1 3 1 1120 180n
+preplace netloc tick_src_tick 1 2 1 620 380n
+preplace netloc tick_stb_1 1 3 1 920 380n
+preplace netloc uw_engine_pre0 1 3 1 1000 300n
+preplace netloc uw_engine_pre256 1 3 1 980 320n
+preplace netloc uw_engine_rs0 1 3 1 960 340n
+preplace netloc uw_engine_rs256 1 3 1 940 360n
+preplace netloc uw_engine_spi_csld 1 3 1 1220 80n
+preplace netloc uw_engine_spi_mosi0 1 3 1 1180 120n
+preplace netloc uw_engine_spi_mosi1 1 3 1 1160 140n
+preplace netloc uw_engine_spi_sck 1 3 1 1200 100n
+preplace netloc vprebot_sw_1 1 3 1 1080 220n
+preplace netloc vpretop_sw_1 1 3 1 1100 200n
+preplace netloc zero_dout 1 3 1 NJ 860
+preplace netloc hier_0_M_AXI 1 1 2 NJ 530 N
+preplace netloc pcie_refclk_1 1 0 1 NJ 240
+preplace netloc smartconnect_M00_AXI 1 2 1 N 320
+preplace netloc smartconnect_M01_AXI 1 2 1 N 470
+preplace netloc uwfetcher_0_M_AXI 1 1 2 NJ 220 N
+preplace netloc xdma_0_M_AXI_B 1 1 1 N 320
+preplace netloc xdma_0_pcie_mgt 1 0 1 NJ 220
+levelinfo -pg 1 0 160 460 780 1240
+pagesize -pg 1 -db -bbox -sgen -140 0 1410 920
 ",
-   "No Loops_ScaleFactor":"0.891101",
-   "No Loops_TopLeft":"-192,3",
+   "No Loops_ScaleFactor":"0.833698",
+   "No Loops_TopLeft":"-261,5",
    "commentid":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
@@ -62,5 +63,5 @@ pagesize -pg 1 -db -bbox -sgen -110 0 380 200
 "
 }
 {
-   """"""""""""""""""""""""""""""""da_axi4_cnt"""""""""""""""""""""""""""""""":"4"
+   """""""""""""""""""""""""""""""""""da_axi4_cnt""""""""""""""""""""""""""""""""""":"4"
 }

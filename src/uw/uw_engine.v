@@ -18,12 +18,26 @@ module uw_engine
     (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF axis_in, ASSOCIATED_RESET resetn" *)
     input   clk,
     input   resetn,
-
+    
     // Our engine starts running when this strobes high
     input   start_stb,
 
+    // This will be true when the input FIFO has enough data in 
+    // it that we are very unlikely to underflow
+    input   fifo_loaded,
+
+    // This will be high while the engine is running
+    output  busy,
+
     // This will be high while the userwave fetcher is running
     input   fetcher_busy,
+
+    // If this is high, the userwave will stop after executing
+    // a UWC that has the "read_safe_halting_point" flag set.
+    input   req_safe_halt,
+
+    // If this is high, the userwave will stop executing immediately
+    input   req_unsafe_halt,
 
     // This is derived from the "row_period" pulse that is output
     // by the sensor chip.  Theoretically, we will see a rising edge
@@ -37,8 +51,9 @@ module uw_engine
     // The count of ticks thus far in the currently executing UWC
     output reg[15:0] tick_count,
 
-    // This strobes high every time we don't have input available
-    output reg underflow_stb,
+    // Error strobes
+    output reg underflow_stb,  // Ran out of input data too early
+    output reg short_uwc_stb,  // A UWC had a duration less than 4
 
     // Switches that control the sensor-chip
     output reg liq_sw,
@@ -79,6 +94,9 @@ module uw_engine
     //=========================================================================
 );
 
+// No UWC is allowed to be shorter than 4 ticks because it takes that long to
+// program the DACs
+localparam MINIMUM_UWC_DURATION = 4;
 
 //=============================================================================
 // These fields are the currently executing userwave command
@@ -208,18 +226,20 @@ reg next_glb_pre_sw;
 //=============================================================================
 reg[2:0]   fsm_state;
 localparam FSM_IDLE             = 0;
-localparam FSM_FETCH_1ST_UWC    = 1;
-localparam FSM_WAIT_DAC_IDLE    = 2;
-localparam FSM_NEXT_UWC         = 3;
-localparam FSM_SETUP_SWITCHES   = 4;
-localparam FSM_WAIT_FOR_TICK    = 5;
-localparam FSM_WAIT_UNTIL_SAFE  = 6;
+localparam FSM_WAIT_FIFO_LOADED = 1;
+localparam FSM_FETCH_1ST_UWC    = 2;
+localparam FSM_WAIT_DAC_IDLE    = 3;
+localparam FSM_NEXT_UWC         = 4;
+localparam FSM_SETUP_SWITCHES   = 5;
+localparam FSM_WAIT_FOR_TICK    = 6;
+localparam FSM_WAIT_UNTIL_SAFE  = 7;
 reg[8:0]   smem_access_counter;
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
 
     // These strobe high for a single cycle at a time
     underflow_stb <= 0;
+    short_uwc_stb <= 0;
     pgm_dacs_stb  <= 0;
     row_tick_stb  <= 0;
 
@@ -250,9 +270,15 @@ always @(posedge clk) begin
                     next_refp_sw    <= 0; 
                     next_refn_sw    <= 0; 
                     next_glb_pre_sw <= 0;  
-                    fsm_state       <= FSM_FETCH_1ST_UWC;
+                    fsm_state       <= FSM_WAIT_FIFO_LOADED;
                 end
             end
+
+        // Wait for the FIFO to be loaded with sufficient data such that we
+        // are very unlikely to underflow
+        FSM_WAIT_FIFO_LOADED:
+            if (fifo_loaded)
+                fsm_state <= FSM_FETCH_1ST_UWC;
 
         // Fetch the first UWC and program the DAC with the values it contains.
         // The values won't be driven to the DAC pins until the *next* time we
@@ -308,6 +334,9 @@ always @(posedge clk) begin
         // rs256, pre0, and pre256 signals, which take effect immediately.
         FSM_SETUP_SWITCHES:
             begin
+                
+                // Tell the world we saw a UWC with an invalid duration
+                short_uwc_stb <= (uwc_cmd_duration < MINIMUM_UWC_DURATION);
 
                 //-------------------------------------------------------------
                 // Do we need to change any switch settings at the next tick?
@@ -389,12 +418,25 @@ always @(posedge clk) begin
                 rs0   <= 0;
                 rs256 <= 0;
 
+                // If we've reached the end of the current UWC, check to see
+                // if a halt has been requested.   If no halt was requested,
+                // go fetch the next UWC.
                 if (tick_count == uwc_last_tick) begin
-                    pre0       <= 0; // In case a faulty UWC left it on
-                    pre256     <= 0; // In case a faulty UWC left it on
-                    fsm_state  <= FSM_NEXT_UWC;
+                    pre0   <= 0; 
+                    pre256 <= 0; 
+                    
+                    if (req_unsafe_halt)
+                        fsm_state <= FSM_IDLE;
+
+                    else if (req_safe_halt & uwc_read_safe_halting_point)
+                        fsm_state <= FSM_IDLE;
+
+                    else
+                        fsm_state <= FSM_NEXT_UWC;
                 end
                
+                // If we've not yet reached the end of the current UWC,
+                // go setup the switches and signals for the next tick
                 else begin
                     tick_count <= tick_count + 1;
                     fsm_state  <= FSM_SETUP_SWITCHES;
@@ -411,6 +453,9 @@ assign axis_in_tready = (fsm_state == FSM_FETCH_1ST_UWC)
 // SMEM.  We prevent other modules from writing to SMEM during a chip-read
 // because it introduces noise into the sensor-chip's internal ADC sampling.
 assign smem_access_enable = (smem_access_counter == 0);
+
+// We're busy if we're not idling with start_stb == 0.
+assign busy = !(fsm_state == FSM_IDLE && start_stb == 0);
 //=============================================================================
 
 

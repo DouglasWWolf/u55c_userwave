@@ -16,8 +16,11 @@ file_len=$(stat -c %s uw.bin)
 # How many userwave commands are in the binary file?
 userwave_length=$((file_len / 64))
 
+# How large of a buffer should we create to hold the userwave?
+physram_length=$(((file_len + 0x10000) & 0xFFFF0000))
+  
 # Load the binary file into the host-RAM buffer
-physram 0x1_0000_0000 -load uw.bin
+physram 0x1_0000_0000 $physram_length -load uw.bin
 
 # Clear a few entries in the "recorded userwave" buffer
 physram 0x2_0000_0000 -clear 0xFF
@@ -25,8 +28,8 @@ physram 0x2_0000_0000 -clear 0xFF
 axi $REG_HOST_ADDR_H 0x0000_0001
 axi $REG_HOST_ADDR_L 0x0000_0000
 
-axi $REG_HOST_CAPACITY $((1024* 1024 * 1024))
-axi $REG_UWC_TOTAL $userwave_length
+axi $REG_HOST_CAPACITY $((1024 * 1024 * 1024))
+axi $REG_UWC_TOTAL     $userwave_length
 
 axi $REG_UWC_PROVIDED 0
 show_stats
@@ -34,4 +37,17 @@ show_stats
 axi $REG_UWC_PROVIDED $userwave_length
 show_stats
 
+axi $REG_REQ_SAFE_HALT   0
+axi $REG_REQ_UNSAFE_HALT 0
+
+echo "Starting..."
 axi $REG_START_FETCHER 1
+
+sleep 1
+#axi $REG_REQ_UNSAFE_HALT 1
+
+while [ $(axi -dec $REG_START_FETCHER) -ne 0 ]; do
+   sleep .1
+done
+
+echo "Done"

@@ -19,6 +19,10 @@ module uw_ctl # (parameter AW=8)
     // This strobes high to start the userwave fetcher
     output reg start_fetcher_stb,
 
+    // These will be high if their respective modules are still running
+    input  uw_engine_busy,
+    input  uw_fetcher_busy,
+
     // Address of the userwave buffer in host RAM
     output reg[63:0] uw_host_addr,
 
@@ -31,14 +35,21 @@ module uw_ctl # (parameter AW=8)
     // How many UWCs has the software stuffed into the host-RAM buffer?
     output reg[31:0] uwc_provided,
 
+    // Two different kinds of halt requests
+    output reg req_safe_halt,
+    output reg req_unsafe_halt,
+
     // How many UWC's has the fetcher fetched?
     input[31:0] uwc_fetched,
 
     // How many free UWC slots are there in the host-RAM buffer?
     input[31:0] uwc_host_free,
 
-    // This strobes high any time the userwave engine reports an underflow
+    // Strobes high any time the userwave engine reports an underflow
     input uw_underflow_stb,
+
+    // Strobes high when the userwave engine reports a too-short UWC
+    input uw_short_uwc_stb,
 
     //================== This is an AXI4-Lite slave interface ==================
         
@@ -75,15 +86,17 @@ module uw_ctl # (parameter AW=8)
 );  
 
 //=========================  AXI Register Map  =============================
-localparam REG_HOST_ADDR_H   = 0;
-localparam REG_HOST_ADDR_L   = 1;
-localparam REG_HOST_CAPACITY = 2;
-localparam REG_UWC_TOTAL     = 3;
-localparam REG_UWC_PROVIDED  = 4;
-localparam REG_UWC_FETCHED   = 5;
-localparam REG_UWC_HOST_FREE = 6;
-localparam REG_START_FETCHER = 7;
-localparam REG_ERRORS        = 8;
+localparam REG_HOST_ADDR_H     = 0;
+localparam REG_HOST_ADDR_L     = 1;
+localparam REG_HOST_CAPACITY   = 2;
+localparam REG_UWC_TOTAL       = 3;
+localparam REG_UWC_PROVIDED    = 4;
+localparam REG_UWC_FETCHED     = 5;
+localparam REG_UWC_HOST_FREE   = 6;
+localparam REG_START_FETCHER   = 7;
+localparam REG_ERRORS          = 8;
+localparam REG_REQ_UNSAFE_HALT = 9;
+localparam REG_REQ_SAFE_HALT   = 10;
 //==========================================================================
 
 
@@ -131,12 +144,15 @@ always @(posedge clk) begin
 
     // If an underflow occurs, record it
     if (uw_underflow_stb) userwave_errors[0] <= 1;
+    if (uw_short_uwc_stb) userwave_errors[1] <= 1;
 
     // If we're in reset, initialize important registers
     if (resetn == 0) begin
         ashi_write_state  <= 0;
         uw_host_addr      <= 64'h1_0000_0000;
         userwave_errors   <= 0;
+        req_safe_halt     <= 0;
+        req_unsafe_halt   <= 0;
     end
 
     // Otherwise, we're not in reset...
@@ -151,14 +167,15 @@ always @(posedge clk) begin
                 // ashi_windex = index of register to be written
                 case (ashi_windx)
 
-
-                    REG_HOST_ADDR_H:    uw_host_addr[63:32] <= ashi_wdata;
-                    REG_HOST_ADDR_L:    uw_host_addr[31:00] <= ashi_wdata;
-                    REG_HOST_CAPACITY:  uw_host_capacity    <= ashi_wdata;
-                    REG_UWC_TOTAL:      uwc_total           <= ashi_wdata;
-                    REG_UWC_PROVIDED:   uwc_provided        <= ashi_wdata;
-                    REG_START_FETCHER:  start_fetcher_stb   <= ashi_wdata[0];
-                    REG_ERRORS:         userwave_errors     <= userwave_errors & ~ashi_wdata;
+                    REG_HOST_ADDR_H:     uw_host_addr[63:32] <= ashi_wdata;
+                    REG_HOST_ADDR_L:     uw_host_addr[31:00] <= ashi_wdata;
+                    REG_HOST_CAPACITY:   uw_host_capacity    <= ashi_wdata;
+                    REG_UWC_TOTAL:       uwc_total           <= ashi_wdata;
+                    REG_UWC_PROVIDED:    uwc_provided        <= ashi_wdata;
+                    REG_START_FETCHER:   start_fetcher_stb   <= ashi_wdata[0];
+                    REG_ERRORS:          userwave_errors     <= userwave_errors & ~ashi_wdata;
+                    REG_REQ_SAFE_HALT:   req_safe_halt       <= ashi_wdata[0];
+                    REG_REQ_UNSAFE_HALT: req_unsafe_halt     <= ashi_wdata[0];
 
                     // Writes to any other register are a decode-error
                     default: ashi_wresp <= DECERR;
@@ -193,14 +210,17 @@ always @(posedge clk) begin
         case (ashi_rindx)
             
             // Allow a read from any valid register                
-            REG_HOST_ADDR_H:   ashi_rdata <= uw_host_addr[63:32];
-            REG_HOST_ADDR_L:   ashi_rdata <= uw_host_addr[31:00];
-            REG_HOST_CAPACITY: ashi_rdata <= uw_host_capacity;
-            REG_UWC_TOTAL:     ashi_rdata <= uwc_total;
-            REG_UWC_PROVIDED:  ashi_rdata <= uwc_provided;
-            REG_UWC_FETCHED:   ashi_rdata <= uwc_fetched;
-            REG_UWC_HOST_FREE: ashi_rdata <= uwc_host_free;
-            REG_ERRORS:        ashi_rdata <= userwave_errors;
+            REG_START_FETCHER:   ashi_rdata <= uw_engine_busy | uw_fetcher_busy;
+            REG_HOST_ADDR_H:     ashi_rdata <= uw_host_addr[63:32];
+            REG_HOST_ADDR_L:     ashi_rdata <= uw_host_addr[31:00];
+            REG_HOST_CAPACITY:   ashi_rdata <= uw_host_capacity;
+            REG_UWC_TOTAL:       ashi_rdata <= uwc_total;
+            REG_UWC_PROVIDED:    ashi_rdata <= uwc_provided;
+            REG_UWC_FETCHED:     ashi_rdata <= uwc_fetched;
+            REG_UWC_HOST_FREE:   ashi_rdata <= uwc_host_free;
+            REG_ERRORS:          ashi_rdata <= userwave_errors;
+            REG_REQ_SAFE_HALT:   ashi_rdata <= req_safe_halt;
+            REG_REQ_UNSAFE_HALT: ashi_rdata <= req_unsafe_halt;
 
             // Reads of any other register are a decode-error
             default: ashi_rresp <= DECERR;

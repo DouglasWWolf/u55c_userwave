@@ -7,3 +7,8 @@ loop_control : begin loop 4
 cmd_index:5, cmd_duration : 64, liq_sw : 1, liq_sw_delay : 2, vpretop_sw : 1, vpretop_sw_delay : 0, vpretop_a:0x5111, vpretop_b:0x5112,  vprebot_a:0x5121, vprebot_b:0x5122, refp_a:0x5131, refp_b:0x5132, refn_a:0x5141, refn_b:0x5142, liq_a:0x5151, liq_b:0x5152
 cmd_index:6, cmd_duration : 64, liq_sw : 0, liq_sw_delay : 3, vpretop_sw : 0, vpretop_sw_delay : 1, vpretop_a:0x6111, vpretop_b:0x6112,  vprebot_a:0x6121, vprebot_b:0x6122, refp_a:0x6131, refp_b:0x6132, refn_a:0x6141, refn_b:0x6142, liq_a:0x6151, liq_b:0x6152
 loop_control : end
+
+loop_control : begin loop 100
+cmd_index:7, cmd_duration : 50000, liq_sw : 1, liq_sw_delay : 2, vpretop_sw : 1, vpretop_sw_delay : 0, vpretop_a:0x1111, vpretop_b:0x2222,  vprebot_a:0x3333, vprebot_b:0x4444, refp_a:0x5555, refp_b:0x6666, refn_a:0x7777, refn_b:0x8888, liq_a:0x9999, liq_b:0xaaaa
+cmd_index:8, cmd_duration : 50000, liq_sw : 1, liq_sw_delay : 2, vpretop_sw : 1, vpretop_sw_delay : 0, vpretop_a:0x1111, vpretop_b:0x2222,  vprebot_a:0x3333, vprebot_b:0x4444, refp_a:0x5555, refp_b:0x6666, refn_a:0x7777, refn_b:0x8888, liq_a:0x9999, liq_b:0xaaaa
+loop_control : end
