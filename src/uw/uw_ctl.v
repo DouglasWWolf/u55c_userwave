@@ -89,8 +89,6 @@ module uw_ctl # (parameter AW=8)
     //==========================================================================
 );  
 
-`include "uw_include.vh"
-
 //=========================  AXI Register Map  =============================
 localparam REG_CTL_COMMAND         = 0;
 localparam REG_ERRORS              = 1;
