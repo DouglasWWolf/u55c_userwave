@@ -1,0 +1,86 @@
+
+#==============================================================================
+#  test_halting - Tests safe-halting vs. unsafe halting
+#==============================================================================
+source registers
+test_name="test_halting"
+userwave=uw.csv.tmp
+
+cat << EOF >$userwave
+    loop_control : begin loop 200
+       cmd_index:0, cmd_duration : 50000
+    loop_control : end
+EOF
+
+# Load our userwave into queue 0
+userwave_length=$(load_userwave 0 $userwave)
+
+# Initialize everything to a known state
+init
+
+# Tell the fetcher about the entire userwave
+provide 0 $userwave_length
+
+# Start the fetcher and the userwave, and let them run for 500 ms
+start_fetcher 0
+ctl safe_run 0
+sleep .5
+
+# Since there are no "safe halting points"
+# in our userwave, this halt should fail
+ctl safe_halt
+sleep .1
+halted=$(is_halted)
+expected=0
+if [ $halted != $expected ]; then
+    fatal "(1) halt_state should be %d not %d" $expected $halted
+fi
+
+# This unsafe-halt should work
+ctl unsafe_halt
+sleep .1
+halted=$(is_halted)
+expected=1
+if [ $halted != $expected ]; then
+    fatal "(2) halt_state should be %d not %d" $expected $halted
+fi
+
+#==========================================================
+# Redo the test, but this time with a userwave that has
+# "read_safe_halting_point" set
+#==========================================================
+
+cat << EOF >uw.csv.tmp
+    loop_control : begin loop 200
+       cmd_index:0, cmd_duration : 50000, read_safe_halting_point:1
+    loop_control : end
+EOF
+
+# Load our userwave into queue 0
+userwave_length=$(load_userwave 0 uw.csv.tmp)
+
+# Initialize everything to a known state
+init
+
+# Tell the fetcher about the entire userwave
+provide 0 $userwave_length
+
+# Start the fetcher and the userwave, and let them run for 500 ms
+start_fetcher 0
+ctl safe_run 0
+sleep .5
+
+# There are safe halting points in our userwave. This should halt
+ctl safe_halt
+sleep .1
+halted=$(is_halted)
+expected=1
+if [ $halted != $expected ]; then
+    fatal "(3) halt_state should be %d not %d" $expected $halted
+fi
+
+# Indicate we passed the test
+pass
+
+# If we get here, all is well!
+exit 0

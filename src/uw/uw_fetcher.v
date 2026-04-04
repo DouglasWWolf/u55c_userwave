@@ -24,25 +24,18 @@
 
 module uw_fetcher # (parameter DW = 512, AW=64, IW = 2)
 (
-    output[2:0]  dbg_fsm_state,
-    output[15:0] dbg_fifo_entries,
 
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
-    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF M_AXI:axis_out, ASSOCIATED_RESET resetn" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF M_AXI:axis_out" *)
     input   clk,
-    input   resetn,
-	    
-    // When this strobes high, we start fetching userwave commands from 
-    // host-RAM, and notify the userwave engine that it's time to start
-    input   start_stb,
+
+    // When this is high, it is effectively a reset
+    (* direct_reset = "true" *) input suspend,
 
     // This will be high for at least one clock cycle when there is 
     // sufficient data in the FIFO that the engine can begin running
     // the userwave without danger of underflow
-    output  fifo_loaded,
-
-    // This will be high when this module isn't idle
-    output  busy,
+    output  fifo_ready,
 
     // The address in host-RAM where the userwave commands reside
     input[63:0] uw_host_addr,
@@ -53,25 +46,15 @@ module uw_fetcher # (parameter DW = 512, AW=64, IW = 2)
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     input[31:0] uw_host_capacity,
 
-    // The total number of commands in the entire userwave
-    input[31:0] uwc_total,
-
     // The number the total number of userwave commands that userwave-feeder
     // software has stuffed into host RAM
-    input[31:0] uwc_provided,
-
-    // The total number of userwave commands we have fetched from host RAM and
-    // stuffed into our FIFO
-    output reg[31:0] uwc_fetched,
+    input[63:0] uwc_provided,
 
     // The amount of free space (in userwave commands) in the host RAM buffer
     output[31:0] uw_host_free,
 
-    // When this strobes high, the userwave engine should start
-    output reg start_engine_stb,
-
-    // This will be high when the userwave engine is running
-    input engine_busy,
+    // This will strobe high if an alignment error occurs
+    output reg alignment_err_stb,
 
     //==================  This is an AXI4-master interface  ===================
 
@@ -201,119 +184,64 @@ assign fifo_out_tready = axis_out_tready;
 //=============================================================================
 
 
-//=============================================================================
-// This is a timer that controls the amount of time that fifo_resetn stays
-// asserted.   It's triggered by "resetn_stb" being 1 or by resetn being
-// asserted.
-//=============================================================================
-reg        resetn_stb;
-reg[6:0]   resetn_counter;
-localparam FIFO_RESET_CYCLES = 64;
-//-----------------------------------------------------------------------------
-always @(posedge clk) begin
-    if (resetn_stb)
-        resetn_counter <= FIFO_RESET_CYCLES;
-    else if (resetn_counter)
-        resetn_counter <= resetn_counter - 1;
-end
-//=============================================================================
-
- 
-//=============================================================================
-// Build a resetn signal for the fifo.   
-//=============================================================================
-reg internal_resetn;
-always @(posedge clk) begin
-    internal_resetn <= (resetn_stb == 0) & (resetn_counter < 10);
-end
-
-// internal_resetn goes high several cycles before resetn_complete goes high.
-// This is sheer paranoia to give things time to come out of reset
-wire resetn_complete = (resetn_stb == 0) & (resetn_counter == 0);
-//=============================================================================
-
 // The number of entries in our FIFO
 reg[15:0] fifo_entries;
 
+// The total number of userwave commands we have fetched from host RAM and
+// stuffed into our FIFO
+reg[63:0] uwc_fetched;
+
 // Since the size of userwave buffer in host RAM is always a power of 2, 
 // we can create a bit-mask by substracting 1
-wire[31:0] uwc_mask = uw_host_capacity - 1;
+wire[63:0] uwc_mask = uw_host_capacity - 1;
 
-// Of the entire userwave, how many UWC have we not yet fetched?
-wire[31:0] uwc_unfetched = uwc_total - uwc_fetched;
-
-// How many UWC are currently waiting for us in the host-RAM buffer?
-wire[31:0] uwc_occupancy = uwc_provided - uwc_fetched;
+// How many unfetched commands are in the buffer?
+wire[31:0] uwc_unfetched = uwc_provided - uwc_fetched;
 
 // Compute the number of free UWC slots in the host-RAM buffer
-assign uw_host_free = uw_host_capacity - uwc_occupancy;
+assign uw_host_free = uw_host_capacity - uwc_unfetched;
 
 //=============================================================================
 // This is the main state machine for this module.   When there is enough
 // room in the output FIFO for an entire block of UWC, we fetch a block
 // (or however many UWC remain in the userwave) from host-RAM
 //=============================================================================
-localparam FSM_IDLE            = 0;
-localparam FSM_WAIT_FIFO_RESET = 1;
-localparam FSM_LOOP            = 2;
-localparam FSM_FETCH_BLOCK     = 3;
-localparam FSM_WAIT_DATA       = 4;
-reg[2:0]   fsm_state;
+localparam FSM_LOOP            = 0;
+localparam FSM_FETCH_BLOCK     = 1;
+localparam FSM_WAIT_DATA       = 2;
+reg[1:0]   fsm_state;
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
 
     // These strobe high for a single cycle at a time
-    resetn_stb       <= 0;
-    start_engine_stb <= 0;
-    fifo_in_tvalid   <= 0;
+    fifo_in_tvalid    <= 0;
+    alignment_err_stb <= 0;
 
-    if (resetn == 0) begin
-        fsm_state <= FSM_IDLE;
+    if (suspend) begin
+        uwc_fetched <= 0;
+        fsm_state   <= FSM_LOOP;
     end
 
     else case(fsm_state)
 
-        // Wait for someone to tell us to start.  When they do, immediately
-        // start a reset on the FIFO
-        FSM_IDLE:
-            if (start_stb && uwc_provided != 0) begin
-                uwc_fetched      <= 0;
-                resetn_stb       <= 1;
-                start_engine_stb <= 1;
-                fsm_state        <= FSM_WAIT_FIFO_RESET;
-            end
-
-        // Wait for the reset on the FIFO to complete
-        FSM_WAIT_FIFO_RESET:
-            if (resetn_complete)
-                fsm_state <= FSM_LOOP;
-
         FSM_LOOP:
 
-            // If there are no more UWC in the userwave, we're done
-            if (uwc_unfetched == 0)
-                fsm_state <= FSM_IDLE;
-
-            //  If software told the engine to halt, we're done
-            else if (!engine_busy)
-                fsm_state <= FSM_IDLE;
-
-            // Otherwise, if there is room for an entire block of UWC in the FIFO...
-            else if (fifo_entries <= (FIFO_DEPTH - UWC_BLOCK)) begin    
+            // If there is room for an entire block of UWC in the FIFO...
+            if (fifo_entries <= (FIFO_DEPTH - UWC_BLOCK)) begin    
 
                 // Determine where we're going to read the next burst of data from
                 M_AXI_ARADDR <= uw_host_addr + (uwc_fetched & uwc_mask) * UWC_BYTES;
 
                 // If there are enough UWC in the host-RAM buffer to fill
                 // an entire block, fetch a whole block
-                if (uwc_occupancy >= UWC_BLOCK) begin
+                if (uwc_unfetched >= UWC_BLOCK) begin
                     M_AXI_ARLEN  <= UWC_BLOCK - 1;
                     fsm_state    <= FSM_FETCH_BLOCK;
                 end
 
                 // If the host-RAM buffer contains the very last unfetched UWC,
                 // fetch all the UWC that remain in the userwave
-                else if (uwc_occupancy == uwc_unfetched) begin
+                else if (uwc_unfetched) begin
                     M_AXI_ARLEN <= uwc_unfetched - 1;
                     fsm_state   <= FSM_FETCH_BLOCK;
                 end
@@ -321,8 +249,10 @@ always @(posedge clk) begin
 
         // Issue the read on the AR channel
         FSM_FETCH_BLOCK:
-            if (M_AXI_ARVALID & M_AXI_ARREADY)
-                fsm_state <= FSM_WAIT_DATA;
+            if (M_AXI_ARVALID & M_AXI_ARREADY) begin
+                alignment_err_stb <= (M_AXI_ARADDR[11:0] != 0);
+                fsm_state         <= FSM_WAIT_DATA;
+            end
 
         // Wait for the entire packet of data to arrive.  It's safe to blindly
         // write to the FIFO without worrying about back-pressure because we
@@ -347,17 +277,35 @@ assign M_AXI_ARVALID = (fsm_state == FSM_FETCH_BLOCK);
 // We're always ready to receive data on M_AXI
 assign M_AXI_RREADY  = 1;
 
-// We're busy when this state machine isn't idling
-assign busy = (start_stb == 1) || (fsm_state != FSM_IDLE);
-
+//=============================================================================
 // Tell the engine when the FIFO has enough data to begin processing
-assign fifo_loaded = (uwc_fetched == uwc_total    )
-                   | (uwc_fetched >= UWC_BLOCK * 2);
+//=============================================================================
+reg fifo_loaded;
+//-----------------------------------------------------------------------------
+always @(posedge clk) begin
+    if (suspend)
+        fifo_loaded <= 0;
+    else if (uwc_provided && !fifo_loaded) begin
+        fifo_loaded <= (uwc_fetched == uwc_provided )
+                     | (uwc_fetched >= UWC_BLOCK * 2);
+    end
+end
 //=============================================================================
 
-
-
-    
+//=============================================================================
+// "fifo_ready" is "fifo_loaded" but delayed by two clock-cycles.
+// We do this so that the by the time the userwave engine sees this signal,
+// the FIFO entries have had a chance to percolate through the FIFO and
+// are ready for fetching by the engine
+//=============================================================================
+uw_delay # (.WIDTH(1), .DELAY(2), .RESET_ACTIVE(1)) i_delay
+(
+    .clk        (clk),
+    .reset      (suspend),
+    .signal_in  (fifo_loaded),
+    .signal_out (fifo_ready)
+);
+//=============================================================================
 
 
 //=============================================================================
@@ -366,7 +314,7 @@ assign fifo_loaded = (uwc_fetched == uwc_total    )
 wire fifo_in =  (fifo_in_tvalid  & fifo_in_tready ); 
 wire fifo_out = (fifo_out_tvalid & fifo_out_tready);
 always @(posedge clk) begin
-    if (internal_resetn == 0)
+    if (suspend)
         fifo_entries <= 0;
     else
         fifo_entries <= fifo_entries + fifo_in - fifo_out;
@@ -390,9 +338,9 @@ xpm_fifo_axis #
 output_fifo
 (
      // Clock and reset
-    .s_aclk   (clk            ),
-    .m_aclk   (clk            ),
-    .s_aresetn(internal_resetn),
+    .s_aclk   (clk     ),
+    .m_aclk   (clk     ),
+    .s_aresetn(!suspend),
 
     // This input bus of the FIFO
     .s_axis_tdata (fifo_in_tdata ),
@@ -433,8 +381,5 @@ output_fifo
     .injectsbiterr_axis()
 );
 //=============================================================================
-
-assign dbg_fsm_state      = fsm_state;
-assign dbg_fifo_entries   = fifo_entries;
 
 endmodule

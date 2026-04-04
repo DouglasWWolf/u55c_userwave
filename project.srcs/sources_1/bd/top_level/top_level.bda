@@ -213,7 +213,7 @@
                 "BP": "axibar_0",
                 "HP": "axibar_highaddr_0",
                 "MA": "M_AXI",
-                "MX": "/uw_engine/uw_fetcher",
+                "MX": "/uw_engine/uw_fetcher_0",
                 "MI": "M_AXI",
                 "MS": "SEG_pcie_bridge_BAR0",
                 "MV": "xilinx.com:module_ref:uw_fetcher:1.0",
@@ -231,6 +231,24 @@
                 "BP": "axibar_0",
                 "HP": "axibar_highaddr_0",
                 "MA": "M_AXI",
+                "MX": "/uw_engine/uw_fetcher_1",
+                "MI": "M_AXI",
+                "MS": "SEG_pcie_bridge_BAR0",
+                "MV": "xilinx.com:module_ref:uw_fetcher:1.0",
+                "SX": "/pcie/pcie_bridge",
+                "SI": "S_AXI_B",
+                "SS": "BAR0",
+                "SV": "xilinx.com:ip:xdma:4.1",
+                "TM": "both",
+                "TU": "memory"
+            },
+            "V6": {
+                "VT": "AC",
+                "BA": "0x0000000000000000",
+                "HA": "0xFFFFFFFFFFFFFFFF",
+                "BP": "axibar_0",
+                "HP": "axibar_highaddr_0",
+                "MA": "M_AXI",
                 "MX": "/uw_recorder/uw_recorder_out",
                 "MI": "M_AXI",
                 "MS": "SEG_pcie_bridge_BAR0",
@@ -242,7 +260,7 @@
                 "TM": "both",
                 "TU": "memory"
             },
-            "V6": {
+            "V7": {
                 "VT": "AC",
                 "BA": "0x0000000000001000",
                 "HA": "0x0000000000001FFF",
@@ -260,7 +278,7 @@
                 "TM": "both",
                 "TU": "register"
             },
-            "V7": {
+            "V8": {
                 "VT": "AC",
                 "BA": "0x0000000000002000",
                 "HA": "0x0000000000002FFF",
@@ -310,6 +328,11 @@
             },
             {
                 "src": "V7",
+                "trg": "V2",
+                "EH": "2"
+            },
+            {
+                "src": "V8",
                 "trg": "V2",
                 "EH": "2"
             }

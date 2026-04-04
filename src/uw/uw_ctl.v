@@ -16,40 +16,44 @@ module uw_ctl # (parameter AW=8)
 (
     input clk, resetn,
 
-    // This strobes high to start the userwave fetcher
-    output reg start_fetcher_stb,
-
-    // These will be high if their respective modules are still running
-    input  uw_engine_busy,
-    input  uw_fetcher_busy,
-
-    // Address of the userwave buffer in host RAM
-    output reg[63:0] uw_host_addr,
-
-    // Number of userwave commands that can fit in the host-RAM buffer
-    output reg[31:0] uw_host_capacity,
-
-    // The total number of UWCs in the userwave
-    output reg[31:0] uwc_total,
-
-    // How many UWCs has the software stuffed into the host-RAM buffer?
-    output reg[31:0] uwc_provided,
-
-    // Two different kinds of halt requests
-    output reg req_safe_halt,
-    output reg req_unsafe_halt,
-
-    // How many UWC's has the fetcher fetched?
-    input[31:0] uwc_fetched,
+    // Asserting this suspends (i.e.,resets) the corresponding fetcher
+    output reg       q0_suspend,
+    output reg       q1_suspend, 
 
     // How many free UWC slots are there in the host-RAM buffer?
-    input[31:0] uwc_host_free,
+    input[31:0]      q0_uwc_host_free,
+    input[31:0]      q1_uwc_host_free,
+
+    // Address of the userwave buffer in host RAM
+    output reg[63:0] q0_uw_host_addr,
+    output reg[63:0] q1_uw_host_addr,
+
+    // Number of userwave commands that can fit in the host-RAM buffer
+    output reg[31:0] q0_uw_host_capacity,
+    output reg[31:0] q1_uw_host_capacity,
+
+    // How many UWCs has the software stuffed into the host-RAM buffer?
+    output reg[63:0] q0_uwc_provided,
+    output reg[63:0] q1_uwc_provided,
+
+    // Various commands that can be sent to the userwave engine
+    output reg[ 2:0] ctl_command,
+
+    // When this is asserted, the userwave engine is halted
+    input uw_halted,
+
+    // Which input queue is the userwave engine currently using?
+    input q_select,
 
     // Strobes high any time the userwave engine reports an underflow
     input uw_underflow_stb,
 
     // Strobes high when the userwave engine reports a too-short UWC
     input uw_short_uwc_stb,
+
+    // Strobes high when the fetcher detects an address alignment error
+    input q0_alignment_stb,
+    input q1_alignment_stb,
 
     //================== This is an AXI4-Lite slave interface ==================
         
@@ -85,18 +89,38 @@ module uw_ctl # (parameter AW=8)
     //==========================================================================
 );  
 
+`include "uw_include.vh"
+
 //=========================  AXI Register Map  =============================
-localparam REG_HOST_ADDR_H     = 0;
-localparam REG_HOST_ADDR_L     = 1;
-localparam REG_HOST_CAPACITY   = 2;
-localparam REG_UWC_TOTAL       = 3;
-localparam REG_UWC_PROVIDED    = 4;
-localparam REG_UWC_FETCHED     = 5;
-localparam REG_UWC_HOST_FREE   = 6;
-localparam REG_START_FETCHER   = 7;
-localparam REG_ERRORS          = 8;
-localparam REG_REQ_UNSAFE_HALT = 9;
-localparam REG_REQ_SAFE_HALT   = 10;
+localparam REG_CTL_COMMAND         = 0;
+localparam REG_ERRORS              = 1;
+localparam REG_STATUS              = 2;
+
+localparam REG_Q0_SUSPEND         = 16;
+localparam REG_Q0_HOST_ADDR_H     = 17;
+localparam REG_Q0_HOST_ADDR_L     = 18;
+localparam REG_Q0_HOST_CAPACITY   = 19;
+localparam REG_Q0_UWC_PROVIDED_H  = 20;
+localparam REG_Q0_UWC_PROVIDED_L  = 21;
+localparam REG_Q0_UWC_HOST_FREE   = 22;
+
+localparam REG_Q1_SUSPEND         = 32;
+localparam REG_Q1_HOST_ADDR_H     = 33;
+localparam REG_Q1_HOST_ADDR_L     = 34;
+localparam REG_Q1_HOST_CAPACITY   = 35;
+localparam REG_Q1_UWC_PROVIDED_H  = 36;
+localparam REG_Q1_UWC_PROVIDED_L  = 37;
+localparam REG_Q1_UWC_HOST_FREE   = 38;
+
+//==========================================================================
+
+//==========================================================================
+// Errors that can be reported in the error register
+//==========================================================================
+localparam ERR_UNDERFLOW = 0;
+localparam ERR_SHORT_UWC = 1;
+localparam ERR_Q0_ALIGN  = 2;
+localparam ERR_Q1_ALIGN  = 3;
 //==========================================================================
 
 
@@ -134,48 +158,68 @@ localparam DECERR = 3;
 
 reg[31:0] userwave_errors;
 
+// The high 32-bits of "uwc_provided"
+reg[31:0] q0_uwc_provided_h, q1_uwc_provided_h;
+
 //==========================================================================
 // This state machine handles AXI4-Lite write requests
 //==========================================================================
 always @(posedge clk) begin
 
-    // This strobes high for one cycle at a time
-    start_fetcher_stb <= 0;
-
-    // If an underflow occurs, record it
-    if (uw_underflow_stb) userwave_errors[0] <= 1;
-    if (uw_short_uwc_stb) userwave_errors[1] <= 1;
-
     // If we're in reset, initialize important registers
     if (resetn == 0) begin
-        ashi_write_state  <= 0;
-        uw_host_addr      <= 64'h1_0000_0000;
-        userwave_errors   <= 0;
-        req_safe_halt     <= 0;
-        req_unsafe_halt   <= 0;
+        ashi_write_state    <= 0;
+
+        q0_uw_host_addr     <= 64'h1_0000_0000;
+        q0_uw_host_capacity <= 32'h0_8000_0000;
+        q0_suspend          <= 1;
+
+        q1_uw_host_addr     <= 64'h1_8000_0000;
+        q1_uw_host_capacity <= 32'h0_8000_0000;
+        q1_suspend          <= 1;
+
+        userwave_errors     <= 0;
+        ctl_command         <= 0;
     end
 
     // Otherwise, we're not in reset...
-    else case (ashi_write_state)
+    else case (ashi_write_state) 
         
         // If an AXI write-request has occured...
         0:  if (ashi_write) begin
        
                 // Assume for the moment that the result will be OKAY
                 ashi_wresp <= OKAY;              
-            
+
                 // ashi_windex = index of register to be written
                 case (ashi_windx)
+                    REG_CTL_COMMAND:        ctl_command             <= ashi_wdata;
+                    REG_ERRORS:             userwave_errors         <= userwave_errors & ~ashi_wdata;
 
-                    REG_HOST_ADDR_H:     uw_host_addr[63:32] <= ashi_wdata;
-                    REG_HOST_ADDR_L:     uw_host_addr[31:00] <= ashi_wdata;
-                    REG_HOST_CAPACITY:   uw_host_capacity    <= ashi_wdata;
-                    REG_UWC_TOTAL:       uwc_total           <= ashi_wdata;
-                    REG_UWC_PROVIDED:    uwc_provided        <= ashi_wdata;
-                    REG_START_FETCHER:   start_fetcher_stb   <= ashi_wdata[0];
-                    REG_ERRORS:          userwave_errors     <= userwave_errors & ~ashi_wdata;
-                    REG_REQ_SAFE_HALT:   req_safe_halt       <= ashi_wdata[0];
-                    REG_REQ_UNSAFE_HALT: req_unsafe_halt     <= ashi_wdata[0];
+                    REG_Q0_SUSPEND:
+                        begin
+                             q0_suspend <= ashi_wdata[0];
+                             if (ashi_wdata[0]) userwave_errors[ERR_Q0_ALIGN] <= 0;
+                        end
+
+                    REG_Q0_HOST_ADDR_H:     q0_uw_host_addr[63:32]  <= ashi_wdata;
+                    REG_Q0_HOST_ADDR_L:     q0_uw_host_addr[31:00]  <= ashi_wdata;
+                    REG_Q0_HOST_CAPACITY:   q0_uw_host_capacity     <= ashi_wdata;
+                    REG_Q0_UWC_PROVIDED_H:  q0_uwc_provided_h       <= ashi_wdata;
+                    REG_Q0_UWC_PROVIDED_L:  q0_uwc_provided         <= {q0_uwc_provided_h, ashi_wdata};
+
+
+                    REG_Q1_SUSPEND:
+                        begin
+                             q1_suspend <= ashi_wdata[0];
+                             if (ashi_wdata[0]) userwave_errors[ERR_Q1_ALIGN] <= 0;
+                        end
+
+                    REG_Q1_HOST_ADDR_H:     q1_uw_host_addr[63:32]  <= ashi_wdata;
+                    REG_Q1_HOST_ADDR_L:     q1_uw_host_addr[31:00]  <= ashi_wdata;
+                    REG_Q1_HOST_CAPACITY:   q1_uw_host_capacity     <= ashi_wdata;
+                    REG_Q1_UWC_PROVIDED_H:  q1_uwc_provided_h       <= ashi_wdata;
+                    REG_Q1_UWC_PROVIDED_L:  q1_uwc_provided         <= {q1_uwc_provided_h, ashi_wdata};
 
                     // Writes to any other register are a decode-error
                     default: ashi_wresp <= DECERR;
@@ -186,6 +230,13 @@ always @(posedge clk) begin
         1: ashi_write_state <= 0;
 
     endcase
+
+    // Record error strobes when they happen
+    if (uw_underflow_stb) userwave_errors[ERR_UNDERFLOW] <= 1;
+    if (uw_short_uwc_stb) userwave_errors[ERR_SHORT_UWC] <= 1;
+    if (q0_alignment_stb) userwave_errors[ERR_Q0_ALIGN ] <= 1;
+    if (q1_alignment_stb) userwave_errors[ERR_Q1_ALIGN ] <= 1;
+
 end
 //==========================================================================
 
@@ -208,19 +259,26 @@ always @(posedge clk) begin
         
         // ashi_rindex = index of register to be read
         case (ashi_rindx)
-            
-            // Allow a read from any valid register                
-            REG_START_FETCHER:   ashi_rdata <= uw_engine_busy | uw_fetcher_busy;
-            REG_HOST_ADDR_H:     ashi_rdata <= uw_host_addr[63:32];
-            REG_HOST_ADDR_L:     ashi_rdata <= uw_host_addr[31:00];
-            REG_HOST_CAPACITY:   ashi_rdata <= uw_host_capacity;
-            REG_UWC_TOTAL:       ashi_rdata <= uwc_total;
-            REG_UWC_PROVIDED:    ashi_rdata <= uwc_provided;
-            REG_UWC_FETCHED:     ashi_rdata <= uwc_fetched;
-            REG_UWC_HOST_FREE:   ashi_rdata <= uwc_host_free;
-            REG_ERRORS:          ashi_rdata <= userwave_errors;
-            REG_REQ_SAFE_HALT:   ashi_rdata <= req_safe_halt;
-            REG_REQ_UNSAFE_HALT: ashi_rdata <= req_unsafe_halt;
+
+            REG_CTL_COMMAND:        ashi_rdata <= ctl_command;
+            REG_ERRORS:             ashi_rdata <= userwave_errors;
+            REG_STATUS:             ashi_rdata <= {q_select, uw_halted};
+
+            REG_Q0_SUSPEND:         ashi_rdata <= q0_suspend;
+            REG_Q0_HOST_ADDR_H:     ashi_rdata <= q0_uw_host_addr[63:32];
+            REG_Q0_HOST_ADDR_L:     ashi_rdata <= q0_uw_host_addr[31:00];
+            REG_Q0_HOST_CAPACITY:   ashi_rdata <= q0_uw_host_capacity;
+            REG_Q0_UWC_PROVIDED_H:  ashi_rdata <= q0_uwc_provided[63:32];
+            REG_Q0_UWC_PROVIDED_L:  ashi_rdata <= q0_uwc_provided[31:00];
+            REG_Q0_UWC_HOST_FREE:   ashi_rdata <= q0_uwc_host_free;
+
+            REG_Q1_SUSPEND:         ashi_rdata <= q1_suspend;
+            REG_Q1_HOST_ADDR_H:     ashi_rdata <= q1_uw_host_addr[63:32];
+            REG_Q1_HOST_ADDR_L:     ashi_rdata <= q1_uw_host_addr[31:00];
+            REG_Q1_HOST_CAPACITY:   ashi_rdata <= q1_uw_host_capacity;
+            REG_Q1_UWC_PROVIDED_H:  ashi_rdata <= q1_uwc_provided[63:32];
+            REG_Q1_UWC_PROVIDED_L:  ashi_rdata <= q1_uwc_provided[31:00];
+            REG_Q1_UWC_HOST_FREE:   ashi_rdata <= q1_uwc_host_free;
 
             // Reads of any other register are a decode-error
             default: ashi_rresp <= DECERR;

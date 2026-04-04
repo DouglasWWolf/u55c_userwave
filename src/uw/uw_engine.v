@@ -15,37 +15,27 @@
 module uw_engine
 (
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
-    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF axis_in, ASSOCIATED_RESET resetn" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF axis_in0:axis_in1, ASSOCIATED_RESET resetn" *)
     input   clk,
     input   resetn,
     
-    // Our engine starts running when this strobes high
-    input   start_stb,
-
     // This will be true when the input FIFO has enough data in 
     // it that we are very unlikely to underflow
-    input   fifo_loaded,
+    input   fifo0_ready,
+    input   fifo1_ready,
 
-    // This will be high while the engine is running
-    output  busy,
-
-    // This will be high while the userwave fetcher is running
-    input   fetcher_busy,
-
-    // If this is high, the userwave will stop after executing
-    // a UWC that has the "read_safe_halting_point" flag set.
-    input   req_safe_halt,
-
-    // If this is high, the userwave will stop executing immediately
-    input   req_unsafe_halt,
+    // One of the CTL_XXX commands
+    input[2:0] ctl_command,
 
     // This is derived from the "row_period" pulse that is output
     // by the sensor chip.  Theoretically, we will see a rising edge
     // every 256 clock cycles.
     input   row_pulse,
 
-    // This is for debugging.  This strobes high in unison with the
-    // changing of the output switches
+    // This is for debugging.  This strobes high in unison with the changing
+    // of the output switches.  It only strobes high on "real" userwave
+    // commands, and not on the artifical "no-op" UWCs that this module 
+    // generates internally.
     output reg row_tick_stb,
 
     // The count of ticks thus far in the currently executing UWC
@@ -54,6 +44,12 @@ module uw_engine
     // Error strobes
     output reg underflow_stb,  // Ran out of input data too early
     output reg short_uwc_stb,  // A UWC had a duration less than 4
+
+    // This will be asserted when a halt-request has been satisfied
+    output reg halted,
+
+    // This keeps track of which input queue is currently selected
+    output reg q_select,
 
     // Switches that control the sensor-chip
     output reg liq_sw,
@@ -88,15 +84,113 @@ module uw_engine
     // This is the stream of userwave commands that gets fed to us by the
     // userwave fetcher
     //=========================================================================
-    input [511:0]   axis_in_tdata,
-    input           axis_in_tvalid,
-    output          axis_in_tready
+    input [511:0]   axis_in0_tdata,
+    input           axis_in0_tvalid,
+    output          axis_in0_tready,
     //=========================================================================
+
+
+    //=========================================================================
+    // This is the stream of userwave commands that gets fed to us by the
+    // userwave fetcher
+    //=========================================================================
+    input [511:0]   axis_in1_tdata,
+    input           axis_in1_tvalid,
+    output          axis_in1_tready
+    //=========================================================================
+
 );
+
+`include "uw_include.vh"
 
 // No UWC is allowed to be shorter than 4 ticks because it takes that long to
 // program the DACs
 localparam MINIMUM_UWC_DURATION = 4;
+
+//=============================================================================
+// Decode "ctl_command" into discrete signals
+//=============================================================================
+reg req_run;
+reg req_unsafe;
+reg req_q;
+//-----------------------------------------------------------------------------
+always @* begin
+
+    case (ctl_command)
+        
+        CTL_REQ_UNSAFE_HALT:
+            begin
+                req_run    = 0;
+                req_unsafe = 1;
+                req_q      = 0; // Doesn't matter
+            end
+
+        CTL_REQ_SAFE_HALT:
+            begin
+                req_run    = 0;
+                req_unsafe = 0;
+                req_q      = 0; // Doesn't matter
+            end
+
+        CTL_REQ_SAFE_RUN_Q0:
+            begin
+                req_run    = 1;
+                req_unsafe = 0;
+                req_q      = 0;
+            end
+
+        CTL_REQ_SAFE_RUN_Q1:
+            begin
+                req_run    = 1;
+                req_unsafe = 0;
+                req_q      = 1;
+            end
+
+        CTL_REQ_UNSAFE_RUN_Q0:
+            begin
+                req_run    = 1;
+                req_unsafe = 1;
+                req_q      = 0;
+            end
+
+        CTL_REQ_UNSAFE_RUN_Q1:
+            begin
+                req_run    = 1;
+                req_unsafe = 1;
+                req_q      = 1;
+            end
+
+        // Any illegal command is "unsafe halt"
+        default:
+            begin
+                req_run    = 0;
+                req_unsafe = 1;
+                req_q      = 0; // Doesn't matter
+            end
+
+    endcase
+
+end
+//=============================================================================
+
+//=============================================================================
+// Build a switch between the two input streams
+//=============================================================================
+wire[511:0] axis_in_tdata;
+wire        axis_in_tvalid;
+wire        axis_in_tready;
+//-----------------------------------------------------------------------------
+assign axis_in_tdata  = q_select ? axis_in1_tdata  : axis_in0_tdata ;
+assign axis_in_tvalid = q_select ? axis_in1_tvalid : axis_in0_tvalid;
+assign axis_in0_tready = (axis_in_tready & q_select == 0);
+assign axis_in1_tready = (axis_in_tready & q_select == 1);
+//-------------------------------------------------------------------------------
+wire   fifo_ready[0:1];
+assign fifo_ready[0] = fifo0_ready;
+assign fifo_ready[1] = fifo1_ready;
+//=============================================================================
+
+
 
 //=============================================================================
 // These fields are the currently executing userwave command
@@ -148,8 +242,6 @@ wire[15:0] uwc_glb_pre_end      = uwc_glb_pre_start + uwc_glb_pre_duration;
 wire[15:0] uwc_roll_pre_bot_end = uwc_roll_pre_bot_start + uwc_roll_pre_bot_duration;
 wire[15:0] uwc_roll_pre_top_end = uwc_roll_pre_top_start + uwc_roll_pre_top_duration;
 //=============================================================================
-
-
 
 //=============================================================================
 // These are our interface with the DAC driver module that programs the DACS
@@ -206,7 +298,9 @@ wire row_pulse_rising = (prior_row_pulse == 0) & (row_pulse == 1);
 // the DAC voltages from uwc[0] and set the state out of the output switches
 // from uwc[1]
 reg[511:0] uwc[0:1];
-reg[1:0]   uwc_valid;
+
+// A no-op userwave command
+wire[511:0] uwc_nop;
 
 // The next state of the output switches
 reg next_liq_sw;
@@ -224,15 +318,11 @@ reg next_glb_pre_sw;
 // not instruct the DACS to drive those voltages to the DACs pin until the
 // *next* time we program DAC voltages
 //=============================================================================
-reg[2:0]   fsm_state;
-localparam FSM_IDLE             = 0;
-localparam FSM_WAIT_FIFO_LOADED = 1;
-localparam FSM_FETCH_1ST_UWC    = 2;
-localparam FSM_WAIT_DAC_IDLE    = 3;
-localparam FSM_NEXT_UWC         = 4;
-localparam FSM_SETUP_SWITCHES   = 5;
-localparam FSM_WAIT_FOR_TICK    = 6;
-localparam FSM_WAIT_UNTIL_SAFE  = 7;
+reg[1:0]   fsm_state;
+localparam FSM_NEXT_UWC       = 0;
+localparam FSM_SETUP_SWITCHES = 1;
+localparam FSM_WAIT_FOR_TICK  = 2;
+localparam FSM_WAIT_TICK_END  = 3;
 reg[8:0]   smem_access_counter;
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
@@ -249,83 +339,50 @@ always @(posedge clk) begin
         smem_access_counter <= smem_access_counter - 1;
 
     if (resetn == 0) begin
-        fsm_state           <= FSM_IDLE;
+        fsm_state           <= FSM_NEXT_UWC;
+        pre0                <= 0;
+        pre256              <= 0;
+        rs0                 <= 0;
+        rs256               <= 0;
+        next_liq_sw         <= 0;   
+        next_vpretop_sw     <= 0;   
+        next_vprebot_sw     <= 0;   
+        next_refp_sw        <= 0; 
+        next_refn_sw        <= 0; 
+        next_glb_pre_sw     <= 0;  
         smem_access_counter <= 0;
+        halted              <= 1;
+        q_select            <= 0;
+        uwc[0]              <= uwc_nop;
+        uwc[1]              <= uwc_nop;
     end
 
     else case(fsm_state)
-
-        // We're idle.  If we're told to start, go fetch a userwave command
-        FSM_IDLE:
-            begin
-                uwc_valid       <= 0;
-                pre0            <= 0;
-                pre256          <= 0;
-                rs0             <= 0;
-                rs256           <= 0;
-                if (start_stb) begin
-                    next_liq_sw     <= 0;   
-                    next_vpretop_sw <= 0;   
-                    next_vprebot_sw <= 0;   
-                    next_refp_sw    <= 0; 
-                    next_refn_sw    <= 0; 
-                    next_glb_pre_sw <= 0;  
-                    fsm_state       <= FSM_WAIT_FIFO_LOADED;
-                end
-            end
-
-        // Wait for the FIFO to be loaded with sufficient data such that we
-        // are very unlikely to underflow
-        FSM_WAIT_FIFO_LOADED:
-            if (fifo_loaded)
-                fsm_state <= FSM_FETCH_1ST_UWC;
-
-        // Fetch the first UWC and program the DAC with the values it contains.
-        // The values won't be driven to the DAC pins until the *next* time we
-        // program DAC voltages
-        FSM_FETCH_1ST_UWC:
-            if (axis_in_tready & axis_in_tvalid) begin
-                uwc[0]       <= axis_in_tdata;
-                uwc_valid[0] <= 1;
-                pgm_dacs_stb <= 1;
-                fsm_state    <= FSM_WAIT_DAC_IDLE;
-            end
-
-        // Here we wait for the DAC programming to complete, and for
-        // the rising edge of the row_pulse.  We wait for that rising edge
-        // because we want state FSM_NEXT_UWC to start at the very beginning
-        // of a tick period
-        FSM_WAIT_DAC_IDLE:
-            if (pgm_dacs_complete & row_pulse_rising) begin
-                fsm_state <= FSM_NEXT_UWC;
-            end
 
         // Copy uwc[0] into uwc[1] and fetch a new UWC into uwc[0].
         // uwc[0] contains the voltages we program into the DAC
         // uwc[1] contains all other UWC settings
         FSM_NEXT_UWC:
             begin
-                tick_count <= 0;
+                if (halted) begin
+                    uwc[1] <= uwc[0];
+                    uwc[0] <= uwc_nop;
+                end
 
-                if (axis_in_tready & axis_in_tvalid) begin
-                    uwc[1]       <= uwc[0];
-                    uwc[0]       <= axis_in_tdata;
-                    uwc_valid[1] <= uwc_valid[0];
-                    uwc_valid[0] <= 1;
-                    fsm_state    <= FSM_SETUP_SWITCHES;
+                else if (axis_in_tready & axis_in_tvalid) begin
+                    uwc[1] <= uwc[0];
+                    uwc[0] <= axis_in_tdata;
                 end
                 
-                else if (fetcher_busy)
+                else begin
                     underflow_stb <= 1;
-                
-                else if (uwc_valid[0]) begin
-                    uwc[1]       <= uwc[0];
-                    uwc_valid[1] <= uwc_valid[0];
-                    uwc_valid[0] <= 0;
-                    fsm_state    <= FSM_SETUP_SWITCHES;
+                    uwc[1] <= uwc[0];
+                    uwc[0] <= uwc_nop;
                 end
 
-                else fsm_state <= FSM_IDLE;
+                tick_count <= 0;
+                fsm_state  <= FSM_SETUP_SWITCHES;
+
             end
             
 
@@ -399,7 +456,7 @@ always @(posedge clk) begin
         // to their new output values
         FSM_WAIT_FOR_TICK:
             if (row_pulse_rising) begin
-                row_tick_stb <= 1;
+                row_tick_stb <= (uwc_read_generated_flag == 0);
                 pgm_dacs_stb <= (tick_count == 0);
                 liq_sw       <= next_liq_sw    ;   
                 vpretop_sw   <= next_vpretop_sw;   
@@ -407,55 +464,64 @@ always @(posedge clk) begin
                 refp_sw      <= next_refp_sw   ; 
                 refn_sw      <= next_refn_sw   ; 
                 glb_pre_sw   <= next_glb_pre_sw;  
-                fsm_state    <= FSM_WAIT_UNTIL_SAFE;
+                fsm_state    <= FSM_WAIT_TICK_END;
             end
 
         // Wait until the row_pulse tells us that it's safe to proceed to
         // the next tick. When it does, decide whether we are going to fetch
         // a new UWC or whether we are still executing the current UWC.
-        FSM_WAIT_UNTIL_SAFE:
+        FSM_WAIT_TICK_END:
             if (row_pulse == 0) begin
                 rs0   <= 0;
                 rs256 <= 0;
 
-                // If we've reached the end of the current UWC, check to see
-                // if a halt has been requested.   If no halt was requested,
-                // go fetch the next UWC.
-                if (tick_count == uwc_last_tick) begin
-                    pre0   <= 0; 
-                    pre256 <= 0; 
-                    
-                    if (req_unsafe_halt)
-                        fsm_state <= FSM_IDLE;
-
-                    else if (req_safe_halt & uwc_read_safe_halting_point)
-                        fsm_state <= FSM_IDLE;
-
-                    else
-                        fsm_state <= FSM_NEXT_UWC;
-                end
-               
-                // If we've not yet reached the end of the current UWC,
-                // go setup the switches and signals for the next tick
-                else begin
+                // If there are more ticks remaining in this userwave command,
+                // go set up the switches for the next tick
+                if (tick_count < uwc_last_tick) begin
                     tick_count <= tick_count + 1;
                     fsm_state  <= FSM_SETUP_SWITCHES;
                 end
+
+                // We've reached the end of the current UWC, check to see
+                // if a halt has been requested. 
+                else begin
+                    pre0   <= 0; 
+                    pre256 <= 0; 
+
+                    // Are we switching to "run" mode?
+                    if (req_run & fifo_ready[req_q]) begin
+                        
+                        // If we're not switching queues, just unhalt
+                        if (q_select == req_q)
+                            halted <= 0;
+
+                        // Switch queues only if we're allowed
+                        else if (uwc_read_safe_halting_point | req_unsafe) begin
+                            halted   <= 0;
+                            q_select <= req_q;
+                        end
+                    end
+                    
+                    // Otherwise, we're trying to halt...
+                    else begin
+                        halted <= (uwc_read_safe_halting_point | req_unsafe);
+                    end
+
+                    fsm_state <= FSM_NEXT_UWC;
+                end
+               
             end
     endcase
 end
 
-// These are the two states in which we fetch data from the input stream
-assign axis_in_tready = (fsm_state == FSM_FETCH_1ST_UWC)
-                      | (fsm_state == FSM_NEXT_UWC     );
+// We're read to accept a new UWC only when we're not halted
+assign axis_in_tready = (fsm_state == FSM_NEXT_UWC && !halted);
 
 // When the counter is zero, it's safe for other modules to access sensor-chip
 // SMEM.  We prevent other modules from writing to SMEM during a chip-read
 // because it introduces noise into the sensor-chip's internal ADC sampling.
 assign smem_access_enable = (smem_access_counter == 0);
 
-// We're busy if we're not idling with start_stb == 0.
-assign busy = !(fsm_state == FSM_IDLE && start_stb == 0);
 //=============================================================================
 
 
@@ -571,6 +637,59 @@ uw_decode_uwc decode_uwc1
     .cmd_index                (uwc_cmd_index               )
 );
 //=============================================================================
+
+
+
+//=============================================================================
+// Create a userwave command that serves as a no-op
+//
+// This holds the voltages and switch states steady, has no read, no pre-charge
+// and does nothing else.
+//
+// The NOP command is a "read_safe_halting_point"
+//============================================================================= 
+uw_encode_uwc i_nop
+(
+    .uwc                      (uwc_nop             ),
+    .glb_pre_start            (0                   ),
+    .glb_pre_duration         (0                   ),
+    .roll_pre_bot_start       (0                   ),
+    .roll_pre_bot_duration    (0                   ),
+    .roll_pre_top_start       (0                   ),
+    .roll_pre_top_duration    (0                   ),
+    .liq_sw                   (uwc_liq_sw          ),
+    .refn_sw                  (uwc_refn_sw         ),
+    .refp_sw                  (uwc_refp_sw         ),
+    .vprebot_sw               (uwc_vprebot_sw      ),
+    .vpretop_sw               (uwc_vpretop_sw      ),
+    .liq_sw_delay             (0                   ),
+    .liq_b                    (uwc_liq_b           ),
+    .liq_a                    (uwc_liq_a           ),
+    .refn_sw_delay            (0                   ),
+    .refn_b                   (uwc_refn_b          ),
+    .refn_a                   (uwc_refn_a          ),
+    .refp_sw_delay            (0                   ),
+    .refp_b                   (uwc_refp_b          ),
+    .refp_a                   (uwc_refp_a          ),
+    .vprebot_sw_delay         (0                   ),
+    .vprebot_b                (uwc_vprebot_b       ),
+    .vprebot_a                (uwc_vprebot_a       ),
+    .vpretop_sw_delay         (0                   ),
+    .vpretop_b                (uwc_vpretop_b       ),
+    .vpretop_a                (uwc_vpretop_a       ),
+    .read_data_type           (0                   ),
+    .read_characterization_id (0                   ),
+    .read_start_time          (0                   ),
+    .read_generated_flag      (1                   ),
+    .read_safe_halting_point  (1                   ),
+    .read_bright_flag         (0                   ),
+    .read_phase               (0                   ),
+    .read_en                  (0                   ), 
+    .cmd_duration             (MINIMUM_UWC_DURATION),
+    .cmd_index                (uwc_cmd_index       )
+);
+//=============================================================================
+
 
 
 

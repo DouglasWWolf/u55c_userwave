@@ -1,0 +1,108 @@
+
+#==============================================================================
+# Tests the proper functioning of alignment error checking
+#==============================================================================
+source registers
+test_name="test_alignment_err"
+userwave=uw.csv.tmp
+
+cat << EOF >$userwave
+    loop_control : begin loop 5000
+       cmd_index:0, cmd_duration : 10000
+    loop_control : end
+EOF
+
+# Load our userwave into queue 0
+userwave_length=$(load_userwave 0 $userwave)
+
+# Initialize everything to a known state
+init
+
+# Tell the fetcher about the first 128 entries
+provide 0 128
+
+# Start the fetcher and the userwave, and wait for the underflow
+start_fetcher 0
+ctl safe_run 0
+wait_underflow 60 >/dev/null
+
+# There should be only an underflow error
+errors=$(axi REG_ERRORS -dec)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(1) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Feed the fetcher two more userwave commands and wait for the underflow
+provide 0 130
+wait_underflow 60 >/dev/null
+
+# There should be only an underflow error
+errors=$(axi REG_ERRORS -dec)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(2) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Feed the fetcher two more userwave commands and wait for the underflow
+provide 0 132
+wait_underflow 60 >/dev/null
+
+# There should be an underflow and an algignment error
+errors=$(axi REG_ERRORS -dec)
+expected=$((ERR_UNDERFLOW | ERR_Q0_ALIGNMENT))
+if [ $errors != $expected ]; then
+    fatal "(3) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+
+#==========================================================
+# Repeat that same test, but this time against queue 1
+#==========================================================
+
+# Load our userwave into queue 1
+userwave_length=$(load_userwave 1 $userwave)
+
+# Initialize everything to a known state
+init
+
+# Tell the fetcher about the first 128 entries
+provide 1 128
+
+# Start the fetcher and the userwave, and wait for the underflow
+start_fetcher 1
+ctl safe_run 1
+wait_underflow 60 >/dev/null
+
+# There should be only an underflow error
+errors=$(axi REG_ERRORS -dec)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(4) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Feed the fetcher two more userwave commands and wait for the underflow
+provide 1 130
+wait_underflow 60 >/dev/null
+
+# There should be only an underflow error
+errors=$(axi REG_ERRORS -dec)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(5) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Feed the fetcher two more userwave commands and wait for the underflow
+provide 1 132
+wait_underflow 60 >/dev/null
+
+# There should be an underflow and an algignment error
+errors=$(axi REG_ERRORS -dec)
+expected=$((ERR_UNDERFLOW | ERR_Q1_ALIGNMENT))
+if [ $errors != $expected ]; then
+    fatal "(6) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# If we get here, all is well!
+pass
+exit 0

@@ -2,7 +2,7 @@
 //Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2024.2 (lin64) Build 5239630 Fri Nov 08 22:34:34 MST 2024
-//Date        : Thu Apr  2 04:46:14 2026
+//Date        : Fri Apr  3 19:21:24 2026
 //Host        : wolf-super-server running 64-bit Ubuntu 20.04.6 LTS
 //Command     : generate_target top_level.bd
 //Design      : top_level
@@ -120,6 +120,43 @@ module pcie_imp_P7FEFP
     S01_AXI_wready,
     S01_AXI_wstrb,
     S01_AXI_wvalid,
+    S02_AXI_araddr,
+    S02_AXI_arburst,
+    S02_AXI_arcache,
+    S02_AXI_arid,
+    S02_AXI_arlen,
+    S02_AXI_arlock,
+    S02_AXI_arprot,
+    S02_AXI_arqos,
+    S02_AXI_arready,
+    S02_AXI_arsize,
+    S02_AXI_arvalid,
+    S02_AXI_awaddr,
+    S02_AXI_awburst,
+    S02_AXI_awcache,
+    S02_AXI_awid,
+    S02_AXI_awlen,
+    S02_AXI_awlock,
+    S02_AXI_awprot,
+    S02_AXI_awqos,
+    S02_AXI_awready,
+    S02_AXI_awsize,
+    S02_AXI_awvalid,
+    S02_AXI_bid,
+    S02_AXI_bready,
+    S02_AXI_bresp,
+    S02_AXI_bvalid,
+    S02_AXI_rdata,
+    S02_AXI_rid,
+    S02_AXI_rlast,
+    S02_AXI_rready,
+    S02_AXI_rresp,
+    S02_AXI_rvalid,
+    S02_AXI_wdata,
+    S02_AXI_wlast,
+    S02_AXI_wready,
+    S02_AXI_wstrb,
+    S02_AXI_wvalid,
     axi_aclk,
     axi_aresetn,
     pcie_mgt_rxn,
@@ -238,6 +275,43 @@ module pcie_imp_P7FEFP
   output S01_AXI_wready;
   input [63:0]S01_AXI_wstrb;
   input S01_AXI_wvalid;
+  input [63:0]S02_AXI_araddr;
+  input [1:0]S02_AXI_arburst;
+  input [3:0]S02_AXI_arcache;
+  input [1:0]S02_AXI_arid;
+  input [7:0]S02_AXI_arlen;
+  input S02_AXI_arlock;
+  input [2:0]S02_AXI_arprot;
+  input [3:0]S02_AXI_arqos;
+  output S02_AXI_arready;
+  input [2:0]S02_AXI_arsize;
+  input S02_AXI_arvalid;
+  input [63:0]S02_AXI_awaddr;
+  input [1:0]S02_AXI_awburst;
+  input [3:0]S02_AXI_awcache;
+  input [1:0]S02_AXI_awid;
+  input [7:0]S02_AXI_awlen;
+  input S02_AXI_awlock;
+  input [2:0]S02_AXI_awprot;
+  input [3:0]S02_AXI_awqos;
+  output S02_AXI_awready;
+  input [2:0]S02_AXI_awsize;
+  input S02_AXI_awvalid;
+  output [0:0]S02_AXI_bid;
+  input S02_AXI_bready;
+  output [1:0]S02_AXI_bresp;
+  output S02_AXI_bvalid;
+  output [0:0]S02_AXI_rdata;
+  output [0:0]S02_AXI_rid;
+  output S02_AXI_rlast;
+  input S02_AXI_rready;
+  output [1:0]S02_AXI_rresp;
+  output S02_AXI_rvalid;
+  input [511:0]S02_AXI_wdata;
+  input S02_AXI_wlast;
+  output S02_AXI_wready;
+  input [63:0]S02_AXI_wstrb;
+  input S02_AXI_wvalid;
   output axi_aclk;
   output [0:0]axi_aresetn;
   input [7:0]pcie_mgt_rxn;
@@ -357,6 +431,43 @@ module pcie_imp_P7FEFP
   wire [0:0]\^S01_AXI_wready ;
   wire [63:0]S01_AXI_wstrb;
   wire S01_AXI_wvalid;
+  wire [63:0]S02_AXI_araddr;
+  wire [1:0]S02_AXI_arburst;
+  wire [3:0]S02_AXI_arcache;
+  wire [1:0]S02_AXI_arid;
+  wire [7:0]S02_AXI_arlen;
+  wire S02_AXI_arlock;
+  wire [2:0]S02_AXI_arprot;
+  wire [3:0]S02_AXI_arqos;
+  wire [0:0]\^S02_AXI_arready ;
+  wire [2:0]S02_AXI_arsize;
+  wire S02_AXI_arvalid;
+  wire [63:0]S02_AXI_awaddr;
+  wire [1:0]S02_AXI_awburst;
+  wire [3:0]S02_AXI_awcache;
+  wire [1:0]S02_AXI_awid;
+  wire [7:0]S02_AXI_awlen;
+  wire S02_AXI_awlock;
+  wire [2:0]S02_AXI_awprot;
+  wire [3:0]S02_AXI_awqos;
+  wire [0:0]\^S02_AXI_awready ;
+  wire [2:0]S02_AXI_awsize;
+  wire S02_AXI_awvalid;
+  wire \^S02_AXI_bid ;
+  wire S02_AXI_bready;
+  wire [1:0]S02_AXI_bresp;
+  wire [0:0]\^S02_AXI_bvalid ;
+  wire \^S02_AXI_rdata ;
+  wire \^S02_AXI_rid ;
+  wire [0:0]\^S02_AXI_rlast ;
+  wire S02_AXI_rready;
+  wire [1:0]S02_AXI_rresp;
+  wire [0:0]\^S02_AXI_rvalid ;
+  wire [511:0]S02_AXI_wdata;
+  wire S02_AXI_wlast;
+  wire [0:0]\^S02_AXI_wready ;
+  wire [63:0]S02_AXI_wstrb;
+  wire S02_AXI_wvalid;
   wire [31:0]axi4_lite_plug_0_M_AXI_ARADDR;
   wire axi4_lite_plug_0_M_AXI_ARREADY;
   wire axi4_lite_plug_0_M_AXI_ARVALID;
@@ -450,6 +561,15 @@ module pcie_imp_P7FEFP
   assign S01_AXI_rlast = \^S01_AXI_rlast [0];
   assign S01_AXI_rvalid = \^S01_AXI_rvalid [0];
   assign S01_AXI_wready = \^S01_AXI_wready [0];
+  assign S02_AXI_arready = \^S02_AXI_arready [0];
+  assign S02_AXI_awready = \^S02_AXI_awready [0];
+  assign S02_AXI_bid[0] = \^S02_AXI_bid ;
+  assign S02_AXI_bvalid = \^S02_AXI_bvalid [0];
+  assign S02_AXI_rdata[0] = \^S02_AXI_rdata ;
+  assign S02_AXI_rid[0] = \^S02_AXI_rid ;
+  assign S02_AXI_rlast = \^S02_AXI_rlast [0];
+  assign S02_AXI_rvalid = \^S02_AXI_rvalid [0];
+  assign S02_AXI_wready = \^S02_AXI_wready [0];
   top_level_axi4_lite_plug_0_0 axi4_lite_plug
        (.M_AXI_ARADDR(axi4_lite_plug_0_M_AXI_ARADDR),
         .M_AXI_ARREADY(axi4_lite_plug_0_M_AXI_ARREADY),
@@ -697,11 +817,54 @@ module pcie_imp_P7FEFP
         .S01_AXI_wstrb(S01_AXI_wstrb[0]),
         .S01_AXI_wuser(1'b0),
         .S01_AXI_wvalid(S01_AXI_wvalid),
+        .S02_AXI_araddr(S02_AXI_araddr[0]),
+        .S02_AXI_arburst(S02_AXI_arburst),
+        .S02_AXI_arcache(S02_AXI_arcache),
+        .S02_AXI_arid(S02_AXI_arid[0]),
+        .S02_AXI_arlen(S02_AXI_arlen[0]),
+        .S02_AXI_arlock(S02_AXI_arlock),
+        .S02_AXI_arprot(S02_AXI_arprot),
+        .S02_AXI_arqos(S02_AXI_arqos),
+        .S02_AXI_arready(\^S02_AXI_arready ),
+        .S02_AXI_arregion({1'b0,1'b0,1'b0,1'b0}),
+        .S02_AXI_arsize(S02_AXI_arsize),
+        .S02_AXI_aruser(1'b0),
+        .S02_AXI_arvalid(S02_AXI_arvalid),
+        .S02_AXI_awaddr(S02_AXI_awaddr[0]),
+        .S02_AXI_awburst(S02_AXI_awburst),
+        .S02_AXI_awcache(S02_AXI_awcache),
+        .S02_AXI_awid(S02_AXI_awid[0]),
+        .S02_AXI_awlen(S02_AXI_awlen[0]),
+        .S02_AXI_awlock(S02_AXI_awlock),
+        .S02_AXI_awprot(S02_AXI_awprot),
+        .S02_AXI_awqos(S02_AXI_awqos),
+        .S02_AXI_awready(\^S02_AXI_awready ),
+        .S02_AXI_awregion({1'b0,1'b0,1'b0,1'b0}),
+        .S02_AXI_awsize(S02_AXI_awsize),
+        .S02_AXI_awuser(1'b0),
+        .S02_AXI_awvalid(S02_AXI_awvalid),
+        .S02_AXI_bid(\^S02_AXI_bid ),
+        .S02_AXI_bready(S02_AXI_bready),
+        .S02_AXI_bresp(S02_AXI_bresp),
+        .S02_AXI_bvalid(\^S02_AXI_bvalid ),
+        .S02_AXI_rdata(\^S02_AXI_rdata ),
+        .S02_AXI_rid(\^S02_AXI_rid ),
+        .S02_AXI_rlast(\^S02_AXI_rlast ),
+        .S02_AXI_rready(S02_AXI_rready),
+        .S02_AXI_rresp(S02_AXI_rresp),
+        .S02_AXI_rvalid(\^S02_AXI_rvalid ),
+        .S02_AXI_wdata(S02_AXI_wdata[0]),
+        .S02_AXI_wid(1'b0),
+        .S02_AXI_wlast(S02_AXI_wlast),
+        .S02_AXI_wready(\^S02_AXI_wready ),
+        .S02_AXI_wstrb(S02_AXI_wstrb[0]),
+        .S02_AXI_wuser(1'b0),
+        .S02_AXI_wvalid(S02_AXI_wvalid),
         .aclk(axi_aclk),
         .aresetn(axi_aresetn));
 endmodule
 
-(* CORE_GENERATION_INFO = "top_level,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=top_level,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=22,numReposBlks=19,numNonXlnxBlks=0,numHierBlks=3,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=12,numPkgbdBlks=0,bdsource=USER,\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"da_axi4_cnt\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"=4,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "top_level.hwdef" *) 
+(* CORE_GENERATION_INFO = "top_level,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=top_level,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=22,numReposBlks=19,numNonXlnxBlks=0,numHierBlks=3,maxHierDepth=1,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=13,numPkgbdBlks=0,bdsource=USER,\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"da_axi4_cnt\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"=4,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "top_level.hwdef" *) 
 module top_level
    (hbm_cattrip,
     pcie0_refclk_clk_n,
@@ -812,6 +975,43 @@ module top_level
   wire [15:0]tick_count_1;
   wire tick_src_tick;
   wire tick_stb_1;
+  wire [63:0]uw_engine_PCI_1_ARADDR;
+  wire [1:0]uw_engine_PCI_1_ARBURST;
+  wire [3:0]uw_engine_PCI_1_ARCACHE;
+  wire [1:0]uw_engine_PCI_1_ARID;
+  wire [7:0]uw_engine_PCI_1_ARLEN;
+  wire uw_engine_PCI_1_ARLOCK;
+  wire [2:0]uw_engine_PCI_1_ARPROT;
+  wire [3:0]uw_engine_PCI_1_ARQOS;
+  wire uw_engine_PCI_1_ARREADY;
+  wire [2:0]uw_engine_PCI_1_ARSIZE;
+  wire uw_engine_PCI_1_ARVALID;
+  wire [63:0]uw_engine_PCI_1_AWADDR;
+  wire [1:0]uw_engine_PCI_1_AWBURST;
+  wire [3:0]uw_engine_PCI_1_AWCACHE;
+  wire [1:0]uw_engine_PCI_1_AWID;
+  wire [7:0]uw_engine_PCI_1_AWLEN;
+  wire uw_engine_PCI_1_AWLOCK;
+  wire [2:0]uw_engine_PCI_1_AWPROT;
+  wire [3:0]uw_engine_PCI_1_AWQOS;
+  wire uw_engine_PCI_1_AWREADY;
+  wire [2:0]uw_engine_PCI_1_AWSIZE;
+  wire uw_engine_PCI_1_AWVALID;
+  wire [0:0]uw_engine_PCI_1_BID;
+  wire uw_engine_PCI_1_BREADY;
+  wire [1:0]uw_engine_PCI_1_BRESP;
+  wire uw_engine_PCI_1_BVALID;
+  wire [0:0]uw_engine_PCI_1_RDATA;
+  wire [0:0]uw_engine_PCI_1_RID;
+  wire uw_engine_PCI_1_RLAST;
+  wire uw_engine_PCI_1_RREADY;
+  wire [1:0]uw_engine_PCI_1_RRESP;
+  wire uw_engine_PCI_1_RVALID;
+  wire [511:0]uw_engine_PCI_1_WDATA;
+  wire uw_engine_PCI_1_WLAST;
+  wire uw_engine_PCI_1_WREADY;
+  wire [63:0]uw_engine_PCI_1_WSTRB;
+  wire uw_engine_PCI_1_WVALID;
   wire uw_engine_pre0;
   wire uw_engine_pre256;
   wire uw_engine_rs0;
@@ -1005,6 +1205,43 @@ module top_level
         .S01_AXI_wready(hier_0_M_AXI_WREADY),
         .S01_AXI_wstrb(hier_0_M_AXI_WSTRB),
         .S01_AXI_wvalid(hier_0_M_AXI_WVALID),
+        .S02_AXI_araddr(uw_engine_PCI_1_ARADDR),
+        .S02_AXI_arburst(uw_engine_PCI_1_ARBURST),
+        .S02_AXI_arcache(uw_engine_PCI_1_ARCACHE),
+        .S02_AXI_arid(uw_engine_PCI_1_ARID),
+        .S02_AXI_arlen(uw_engine_PCI_1_ARLEN),
+        .S02_AXI_arlock(uw_engine_PCI_1_ARLOCK),
+        .S02_AXI_arprot(uw_engine_PCI_1_ARPROT),
+        .S02_AXI_arqos(uw_engine_PCI_1_ARQOS),
+        .S02_AXI_arready(uw_engine_PCI_1_ARREADY),
+        .S02_AXI_arsize(uw_engine_PCI_1_ARSIZE),
+        .S02_AXI_arvalid(uw_engine_PCI_1_ARVALID),
+        .S02_AXI_awaddr(uw_engine_PCI_1_AWADDR),
+        .S02_AXI_awburst(uw_engine_PCI_1_AWBURST),
+        .S02_AXI_awcache(uw_engine_PCI_1_AWCACHE),
+        .S02_AXI_awid(uw_engine_PCI_1_AWID),
+        .S02_AXI_awlen(uw_engine_PCI_1_AWLEN),
+        .S02_AXI_awlock(uw_engine_PCI_1_AWLOCK),
+        .S02_AXI_awprot(uw_engine_PCI_1_AWPROT),
+        .S02_AXI_awqos(uw_engine_PCI_1_AWQOS),
+        .S02_AXI_awready(uw_engine_PCI_1_AWREADY),
+        .S02_AXI_awsize(uw_engine_PCI_1_AWSIZE),
+        .S02_AXI_awvalid(uw_engine_PCI_1_AWVALID),
+        .S02_AXI_bid(uw_engine_PCI_1_BID),
+        .S02_AXI_bready(uw_engine_PCI_1_BREADY),
+        .S02_AXI_bresp(uw_engine_PCI_1_BRESP),
+        .S02_AXI_bvalid(uw_engine_PCI_1_BVALID),
+        .S02_AXI_rdata(uw_engine_PCI_1_RDATA),
+        .S02_AXI_rid(uw_engine_PCI_1_RID),
+        .S02_AXI_rlast(uw_engine_PCI_1_RLAST),
+        .S02_AXI_rready(uw_engine_PCI_1_RREADY),
+        .S02_AXI_rresp(uw_engine_PCI_1_RRESP),
+        .S02_AXI_rvalid(uw_engine_PCI_1_RVALID),
+        .S02_AXI_wdata(uw_engine_PCI_1_WDATA),
+        .S02_AXI_wlast(uw_engine_PCI_1_WLAST),
+        .S02_AXI_wready(uw_engine_PCI_1_WREADY),
+        .S02_AXI_wstrb(uw_engine_PCI_1_WSTRB),
+        .S02_AXI_wvalid(uw_engine_PCI_1_WVALID),
         .axi_aclk(source_200Mhz_clk),
         .axi_aresetn(source_200Mhz_resetn),
         .pcie_mgt_rxn(pcie_mgt_rxn),
@@ -1112,43 +1349,80 @@ module top_level
        (.clk(source_200Mhz_clk),
         .tick(tick_src_tick));
   uw_engine_imp_1G5W8V5 uw_engine
-       (.M_AXI_araddr(uwfetcher_0_M_AXI_ARADDR),
-        .M_AXI_arburst(uwfetcher_0_M_AXI_ARBURST),
-        .M_AXI_arcache(uwfetcher_0_M_AXI_ARCACHE),
-        .M_AXI_arid(uwfetcher_0_M_AXI_ARID),
-        .M_AXI_arlen(uwfetcher_0_M_AXI_ARLEN),
-        .M_AXI_arlock(uwfetcher_0_M_AXI_ARLOCK),
-        .M_AXI_arprot(uwfetcher_0_M_AXI_ARPROT),
-        .M_AXI_arqos(uwfetcher_0_M_AXI_ARQOS),
-        .M_AXI_arready(uwfetcher_0_M_AXI_ARREADY),
-        .M_AXI_arsize(uwfetcher_0_M_AXI_ARSIZE),
-        .M_AXI_arvalid(uwfetcher_0_M_AXI_ARVALID),
-        .M_AXI_awaddr(uwfetcher_0_M_AXI_AWADDR),
-        .M_AXI_awburst(uwfetcher_0_M_AXI_AWBURST),
-        .M_AXI_awcache(uwfetcher_0_M_AXI_AWCACHE),
-        .M_AXI_awid(uwfetcher_0_M_AXI_AWID),
-        .M_AXI_awlen(uwfetcher_0_M_AXI_AWLEN),
-        .M_AXI_awlock(uwfetcher_0_M_AXI_AWLOCK),
-        .M_AXI_awprot(uwfetcher_0_M_AXI_AWPROT),
-        .M_AXI_awqos(uwfetcher_0_M_AXI_AWQOS),
-        .M_AXI_awready(uwfetcher_0_M_AXI_AWREADY),
-        .M_AXI_awsize(uwfetcher_0_M_AXI_AWSIZE),
-        .M_AXI_awvalid(uwfetcher_0_M_AXI_AWVALID),
-        .M_AXI_bid(uwfetcher_0_M_AXI_BID),
-        .M_AXI_bready(uwfetcher_0_M_AXI_BREADY),
-        .M_AXI_bresp(uwfetcher_0_M_AXI_BRESP),
-        .M_AXI_bvalid(uwfetcher_0_M_AXI_BVALID),
-        .M_AXI_rdata(uwfetcher_0_M_AXI_RDATA),
-        .M_AXI_rid(uwfetcher_0_M_AXI_RID),
-        .M_AXI_rlast(uwfetcher_0_M_AXI_RLAST),
-        .M_AXI_rready(uwfetcher_0_M_AXI_RREADY),
-        .M_AXI_rresp(uwfetcher_0_M_AXI_RRESP),
-        .M_AXI_rvalid(uwfetcher_0_M_AXI_RVALID),
-        .M_AXI_wdata(uwfetcher_0_M_AXI_WDATA),
-        .M_AXI_wlast(uwfetcher_0_M_AXI_WLAST),
-        .M_AXI_wready(uwfetcher_0_M_AXI_WREADY),
-        .M_AXI_wstrb(uwfetcher_0_M_AXI_WSTRB),
-        .M_AXI_wvalid(uwfetcher_0_M_AXI_WVALID),
+       (.PCI_0_araddr(uwfetcher_0_M_AXI_ARADDR),
+        .PCI_0_arburst(uwfetcher_0_M_AXI_ARBURST),
+        .PCI_0_arcache(uwfetcher_0_M_AXI_ARCACHE),
+        .PCI_0_arid(uwfetcher_0_M_AXI_ARID),
+        .PCI_0_arlen(uwfetcher_0_M_AXI_ARLEN),
+        .PCI_0_arlock(uwfetcher_0_M_AXI_ARLOCK),
+        .PCI_0_arprot(uwfetcher_0_M_AXI_ARPROT),
+        .PCI_0_arqos(uwfetcher_0_M_AXI_ARQOS),
+        .PCI_0_arready(uwfetcher_0_M_AXI_ARREADY),
+        .PCI_0_arsize(uwfetcher_0_M_AXI_ARSIZE),
+        .PCI_0_arvalid(uwfetcher_0_M_AXI_ARVALID),
+        .PCI_0_awaddr(uwfetcher_0_M_AXI_AWADDR),
+        .PCI_0_awburst(uwfetcher_0_M_AXI_AWBURST),
+        .PCI_0_awcache(uwfetcher_0_M_AXI_AWCACHE),
+        .PCI_0_awid(uwfetcher_0_M_AXI_AWID),
+        .PCI_0_awlen(uwfetcher_0_M_AXI_AWLEN),
+        .PCI_0_awlock(uwfetcher_0_M_AXI_AWLOCK),
+        .PCI_0_awprot(uwfetcher_0_M_AXI_AWPROT),
+        .PCI_0_awqos(uwfetcher_0_M_AXI_AWQOS),
+        .PCI_0_awready(uwfetcher_0_M_AXI_AWREADY),
+        .PCI_0_awsize(uwfetcher_0_M_AXI_AWSIZE),
+        .PCI_0_awvalid(uwfetcher_0_M_AXI_AWVALID),
+        .PCI_0_bid(uwfetcher_0_M_AXI_BID),
+        .PCI_0_bready(uwfetcher_0_M_AXI_BREADY),
+        .PCI_0_bresp(uwfetcher_0_M_AXI_BRESP),
+        .PCI_0_bvalid(uwfetcher_0_M_AXI_BVALID),
+        .PCI_0_rdata(uwfetcher_0_M_AXI_RDATA),
+        .PCI_0_rid(uwfetcher_0_M_AXI_RID),
+        .PCI_0_rlast(uwfetcher_0_M_AXI_RLAST),
+        .PCI_0_rready(uwfetcher_0_M_AXI_RREADY),
+        .PCI_0_rresp(uwfetcher_0_M_AXI_RRESP),
+        .PCI_0_rvalid(uwfetcher_0_M_AXI_RVALID),
+        .PCI_0_wdata(uwfetcher_0_M_AXI_WDATA),
+        .PCI_0_wlast(uwfetcher_0_M_AXI_WLAST),
+        .PCI_0_wready(uwfetcher_0_M_AXI_WREADY),
+        .PCI_0_wstrb(uwfetcher_0_M_AXI_WSTRB),
+        .PCI_0_wvalid(uwfetcher_0_M_AXI_WVALID),
+        .PCI_1_araddr(uw_engine_PCI_1_ARADDR),
+        .PCI_1_arburst(uw_engine_PCI_1_ARBURST),
+        .PCI_1_arcache(uw_engine_PCI_1_ARCACHE),
+        .PCI_1_arid(uw_engine_PCI_1_ARID),
+        .PCI_1_arlen(uw_engine_PCI_1_ARLEN),
+        .PCI_1_arlock(uw_engine_PCI_1_ARLOCK),
+        .PCI_1_arprot(uw_engine_PCI_1_ARPROT),
+        .PCI_1_arqos(uw_engine_PCI_1_ARQOS),
+        .PCI_1_arready(uw_engine_PCI_1_ARREADY),
+        .PCI_1_arsize(uw_engine_PCI_1_ARSIZE),
+        .PCI_1_arvalid(uw_engine_PCI_1_ARVALID),
+        .PCI_1_awaddr(uw_engine_PCI_1_AWADDR),
+        .PCI_1_awburst(uw_engine_PCI_1_AWBURST),
+        .PCI_1_awcache(uw_engine_PCI_1_AWCACHE),
+        .PCI_1_awid(uw_engine_PCI_1_AWID),
+        .PCI_1_awlen(uw_engine_PCI_1_AWLEN),
+        .PCI_1_awlock(uw_engine_PCI_1_AWLOCK),
+        .PCI_1_awprot(uw_engine_PCI_1_AWPROT),
+        .PCI_1_awqos(uw_engine_PCI_1_AWQOS),
+        .PCI_1_awready(uw_engine_PCI_1_AWREADY),
+        .PCI_1_awsize(uw_engine_PCI_1_AWSIZE),
+        .PCI_1_awvalid(uw_engine_PCI_1_AWVALID),
+        .PCI_1_bid(uw_engine_PCI_1_BID),
+        .PCI_1_bready(uw_engine_PCI_1_BREADY),
+        .PCI_1_bresp(uw_engine_PCI_1_BRESP),
+        .PCI_1_bvalid(uw_engine_PCI_1_BVALID),
+        .PCI_1_rdata(uw_engine_PCI_1_RDATA),
+        .PCI_1_rid(uw_engine_PCI_1_RID),
+        .PCI_1_rlast(uw_engine_PCI_1_RLAST),
+        .PCI_1_rready(uw_engine_PCI_1_RREADY),
+        .PCI_1_rresp(uw_engine_PCI_1_RRESP),
+        .PCI_1_rvalid(uw_engine_PCI_1_RVALID),
+        .PCI_1_wdata(uw_engine_PCI_1_WDATA),
+        .PCI_1_wlast(uw_engine_PCI_1_WLAST),
+        .PCI_1_wready(uw_engine_PCI_1_WREADY),
+        .PCI_1_wstrb(uw_engine_PCI_1_WSTRB),
+        .PCI_1_wvalid(uw_engine_PCI_1_WVALID),
         .S_AXI_araddr(smartconnect_M00_AXI_ARADDR),
         .S_AXI_arprot(smartconnect_M00_AXI_ARPROT),
         .S_AXI_arready(smartconnect_M00_AXI_ARREADY),
@@ -1266,43 +1540,80 @@ module top_level
 endmodule
 
 module uw_engine_imp_1G5W8V5
-   (M_AXI_araddr,
-    M_AXI_arburst,
-    M_AXI_arcache,
-    M_AXI_arid,
-    M_AXI_arlen,
-    M_AXI_arlock,
-    M_AXI_arprot,
-    M_AXI_arqos,
-    M_AXI_arready,
-    M_AXI_arsize,
-    M_AXI_arvalid,
-    M_AXI_awaddr,
-    M_AXI_awburst,
-    M_AXI_awcache,
-    M_AXI_awid,
-    M_AXI_awlen,
-    M_AXI_awlock,
-    M_AXI_awprot,
-    M_AXI_awqos,
-    M_AXI_awready,
-    M_AXI_awsize,
-    M_AXI_awvalid,
-    M_AXI_bid,
-    M_AXI_bready,
-    M_AXI_bresp,
-    M_AXI_bvalid,
-    M_AXI_rdata,
-    M_AXI_rid,
-    M_AXI_rlast,
-    M_AXI_rready,
-    M_AXI_rresp,
-    M_AXI_rvalid,
-    M_AXI_wdata,
-    M_AXI_wlast,
-    M_AXI_wready,
-    M_AXI_wstrb,
-    M_AXI_wvalid,
+   (PCI_0_araddr,
+    PCI_0_arburst,
+    PCI_0_arcache,
+    PCI_0_arid,
+    PCI_0_arlen,
+    PCI_0_arlock,
+    PCI_0_arprot,
+    PCI_0_arqos,
+    PCI_0_arready,
+    PCI_0_arsize,
+    PCI_0_arvalid,
+    PCI_0_awaddr,
+    PCI_0_awburst,
+    PCI_0_awcache,
+    PCI_0_awid,
+    PCI_0_awlen,
+    PCI_0_awlock,
+    PCI_0_awprot,
+    PCI_0_awqos,
+    PCI_0_awready,
+    PCI_0_awsize,
+    PCI_0_awvalid,
+    PCI_0_bid,
+    PCI_0_bready,
+    PCI_0_bresp,
+    PCI_0_bvalid,
+    PCI_0_rdata,
+    PCI_0_rid,
+    PCI_0_rlast,
+    PCI_0_rready,
+    PCI_0_rresp,
+    PCI_0_rvalid,
+    PCI_0_wdata,
+    PCI_0_wlast,
+    PCI_0_wready,
+    PCI_0_wstrb,
+    PCI_0_wvalid,
+    PCI_1_araddr,
+    PCI_1_arburst,
+    PCI_1_arcache,
+    PCI_1_arid,
+    PCI_1_arlen,
+    PCI_1_arlock,
+    PCI_1_arprot,
+    PCI_1_arqos,
+    PCI_1_arready,
+    PCI_1_arsize,
+    PCI_1_arvalid,
+    PCI_1_awaddr,
+    PCI_1_awburst,
+    PCI_1_awcache,
+    PCI_1_awid,
+    PCI_1_awlen,
+    PCI_1_awlock,
+    PCI_1_awprot,
+    PCI_1_awqos,
+    PCI_1_awready,
+    PCI_1_awsize,
+    PCI_1_awvalid,
+    PCI_1_bid,
+    PCI_1_bready,
+    PCI_1_bresp,
+    PCI_1_bvalid,
+    PCI_1_rdata,
+    PCI_1_rid,
+    PCI_1_rlast,
+    PCI_1_rready,
+    PCI_1_rresp,
+    PCI_1_rvalid,
+    PCI_1_wdata,
+    PCI_1_wlast,
+    PCI_1_wready,
+    PCI_1_wstrb,
+    PCI_1_wvalid,
     S_AXI_araddr,
     S_AXI_arprot,
     S_AXI_arready,
@@ -1342,43 +1653,80 @@ module uw_engine_imp_1G5W8V5
     tick_count,
     vprebot_sw,
     vpretop_sw);
-  output [63:0]M_AXI_araddr;
-  output [1:0]M_AXI_arburst;
-  output [3:0]M_AXI_arcache;
-  output [1:0]M_AXI_arid;
-  output [7:0]M_AXI_arlen;
-  output M_AXI_arlock;
-  output [2:0]M_AXI_arprot;
-  output [3:0]M_AXI_arqos;
-  input M_AXI_arready;
-  output [2:0]M_AXI_arsize;
-  output M_AXI_arvalid;
-  output [63:0]M_AXI_awaddr;
-  output [1:0]M_AXI_awburst;
-  output [3:0]M_AXI_awcache;
-  output [1:0]M_AXI_awid;
-  output [7:0]M_AXI_awlen;
-  output M_AXI_awlock;
-  output [2:0]M_AXI_awprot;
-  output [3:0]M_AXI_awqos;
-  input M_AXI_awready;
-  output [2:0]M_AXI_awsize;
-  output M_AXI_awvalid;
-  input [0:0]M_AXI_bid;
-  output M_AXI_bready;
-  input [1:0]M_AXI_bresp;
-  input M_AXI_bvalid;
-  input [0:0]M_AXI_rdata;
-  input [0:0]M_AXI_rid;
-  input M_AXI_rlast;
-  output M_AXI_rready;
-  input [1:0]M_AXI_rresp;
-  input M_AXI_rvalid;
-  output [511:0]M_AXI_wdata;
-  output M_AXI_wlast;
-  input M_AXI_wready;
-  output [63:0]M_AXI_wstrb;
-  output M_AXI_wvalid;
+  output [63:0]PCI_0_araddr;
+  output [1:0]PCI_0_arburst;
+  output [3:0]PCI_0_arcache;
+  output [1:0]PCI_0_arid;
+  output [7:0]PCI_0_arlen;
+  output PCI_0_arlock;
+  output [2:0]PCI_0_arprot;
+  output [3:0]PCI_0_arqos;
+  input PCI_0_arready;
+  output [2:0]PCI_0_arsize;
+  output PCI_0_arvalid;
+  output [63:0]PCI_0_awaddr;
+  output [1:0]PCI_0_awburst;
+  output [3:0]PCI_0_awcache;
+  output [1:0]PCI_0_awid;
+  output [7:0]PCI_0_awlen;
+  output PCI_0_awlock;
+  output [2:0]PCI_0_awprot;
+  output [3:0]PCI_0_awqos;
+  input PCI_0_awready;
+  output [2:0]PCI_0_awsize;
+  output PCI_0_awvalid;
+  input [0:0]PCI_0_bid;
+  output PCI_0_bready;
+  input [1:0]PCI_0_bresp;
+  input PCI_0_bvalid;
+  input [0:0]PCI_0_rdata;
+  input [0:0]PCI_0_rid;
+  input PCI_0_rlast;
+  output PCI_0_rready;
+  input [1:0]PCI_0_rresp;
+  input PCI_0_rvalid;
+  output [511:0]PCI_0_wdata;
+  output PCI_0_wlast;
+  input PCI_0_wready;
+  output [63:0]PCI_0_wstrb;
+  output PCI_0_wvalid;
+  output [63:0]PCI_1_araddr;
+  output [1:0]PCI_1_arburst;
+  output [3:0]PCI_1_arcache;
+  output [1:0]PCI_1_arid;
+  output [7:0]PCI_1_arlen;
+  output PCI_1_arlock;
+  output [2:0]PCI_1_arprot;
+  output [3:0]PCI_1_arqos;
+  input PCI_1_arready;
+  output [2:0]PCI_1_arsize;
+  output PCI_1_arvalid;
+  output [63:0]PCI_1_awaddr;
+  output [1:0]PCI_1_awburst;
+  output [3:0]PCI_1_awcache;
+  output [1:0]PCI_1_awid;
+  output [7:0]PCI_1_awlen;
+  output PCI_1_awlock;
+  output [2:0]PCI_1_awprot;
+  output [3:0]PCI_1_awqos;
+  input PCI_1_awready;
+  output [2:0]PCI_1_awsize;
+  output PCI_1_awvalid;
+  input [0:0]PCI_1_bid;
+  output PCI_1_bready;
+  input [1:0]PCI_1_bresp;
+  input PCI_1_bvalid;
+  input [0:0]PCI_1_rdata;
+  input [0:0]PCI_1_rid;
+  input PCI_1_rlast;
+  output PCI_1_rready;
+  input [1:0]PCI_1_rresp;
+  input PCI_1_rvalid;
+  output [511:0]PCI_1_wdata;
+  output PCI_1_wlast;
+  input PCI_1_wready;
+  output [63:0]PCI_1_wstrb;
+  output PCI_1_wvalid;
   input [0:0]S_AXI_araddr;
   input [2:0]S_AXI_arprot;
   output S_AXI_arready;
@@ -1419,43 +1767,80 @@ module uw_engine_imp_1G5W8V5
   output vprebot_sw;
   output vpretop_sw;
 
-  wire [63:0]M_AXI_araddr;
-  wire [1:0]M_AXI_arburst;
-  wire [3:0]M_AXI_arcache;
-  wire [1:0]M_AXI_arid;
-  wire [7:0]M_AXI_arlen;
-  wire M_AXI_arlock;
-  wire [2:0]M_AXI_arprot;
-  wire [3:0]M_AXI_arqos;
-  wire M_AXI_arready;
-  wire [2:0]M_AXI_arsize;
-  wire M_AXI_arvalid;
-  wire [63:0]M_AXI_awaddr;
-  wire [1:0]M_AXI_awburst;
-  wire [3:0]M_AXI_awcache;
-  wire [1:0]M_AXI_awid;
-  wire [7:0]M_AXI_awlen;
-  wire M_AXI_awlock;
-  wire [2:0]M_AXI_awprot;
-  wire [3:0]M_AXI_awqos;
-  wire M_AXI_awready;
-  wire [2:0]M_AXI_awsize;
-  wire M_AXI_awvalid;
-  wire [0:0]M_AXI_bid;
-  wire M_AXI_bready;
-  wire [1:0]M_AXI_bresp;
-  wire M_AXI_bvalid;
-  wire [0:0]M_AXI_rdata;
-  wire [0:0]M_AXI_rid;
-  wire M_AXI_rlast;
-  wire M_AXI_rready;
-  wire [1:0]M_AXI_rresp;
-  wire M_AXI_rvalid;
-  wire [511:0]M_AXI_wdata;
-  wire M_AXI_wlast;
-  wire M_AXI_wready;
-  wire [63:0]M_AXI_wstrb;
-  wire M_AXI_wvalid;
+  wire [63:0]PCI_0_araddr;
+  wire [1:0]PCI_0_arburst;
+  wire [3:0]PCI_0_arcache;
+  wire [1:0]PCI_0_arid;
+  wire [7:0]PCI_0_arlen;
+  wire PCI_0_arlock;
+  wire [2:0]PCI_0_arprot;
+  wire [3:0]PCI_0_arqos;
+  wire PCI_0_arready;
+  wire [2:0]PCI_0_arsize;
+  wire PCI_0_arvalid;
+  wire [63:0]PCI_0_awaddr;
+  wire [1:0]PCI_0_awburst;
+  wire [3:0]PCI_0_awcache;
+  wire [1:0]PCI_0_awid;
+  wire [7:0]PCI_0_awlen;
+  wire PCI_0_awlock;
+  wire [2:0]PCI_0_awprot;
+  wire [3:0]PCI_0_awqos;
+  wire PCI_0_awready;
+  wire [2:0]PCI_0_awsize;
+  wire PCI_0_awvalid;
+  wire [0:0]PCI_0_bid;
+  wire PCI_0_bready;
+  wire [1:0]PCI_0_bresp;
+  wire PCI_0_bvalid;
+  wire [0:0]PCI_0_rdata;
+  wire [0:0]PCI_0_rid;
+  wire PCI_0_rlast;
+  wire PCI_0_rready;
+  wire [1:0]PCI_0_rresp;
+  wire PCI_0_rvalid;
+  wire [511:0]PCI_0_wdata;
+  wire PCI_0_wlast;
+  wire PCI_0_wready;
+  wire [63:0]PCI_0_wstrb;
+  wire PCI_0_wvalid;
+  wire [63:0]PCI_1_araddr;
+  wire [1:0]PCI_1_arburst;
+  wire [3:0]PCI_1_arcache;
+  wire [1:0]PCI_1_arid;
+  wire [7:0]PCI_1_arlen;
+  wire PCI_1_arlock;
+  wire [2:0]PCI_1_arprot;
+  wire [3:0]PCI_1_arqos;
+  wire PCI_1_arready;
+  wire [2:0]PCI_1_arsize;
+  wire PCI_1_arvalid;
+  wire [63:0]PCI_1_awaddr;
+  wire [1:0]PCI_1_awburst;
+  wire [3:0]PCI_1_awcache;
+  wire [1:0]PCI_1_awid;
+  wire [7:0]PCI_1_awlen;
+  wire PCI_1_awlock;
+  wire [2:0]PCI_1_awprot;
+  wire [3:0]PCI_1_awqos;
+  wire PCI_1_awready;
+  wire [2:0]PCI_1_awsize;
+  wire PCI_1_awvalid;
+  wire [0:0]PCI_1_bid;
+  wire PCI_1_bready;
+  wire [1:0]PCI_1_bresp;
+  wire PCI_1_bvalid;
+  wire [0:0]PCI_1_rdata;
+  wire [0:0]PCI_1_rid;
+  wire PCI_1_rlast;
+  wire PCI_1_rready;
+  wire [1:0]PCI_1_rresp;
+  wire PCI_1_rvalid;
+  wire [511:0]PCI_1_wdata;
+  wire PCI_1_wlast;
+  wire PCI_1_wready;
+  wire [63:0]PCI_1_wstrb;
+  wire PCI_1_wvalid;
   wire [0:0]S_AXI_araddr;
   wire [2:0]S_AXI_arprot;
   wire S_AXI_arready;
@@ -1475,7 +1860,7 @@ module uw_engine_imp_1G5W8V5
   wire S_AXI_wready;
   wire [0:0]S_AXI_wstrb;
   wire S_AXI_wvalid;
-  wire clk_1;
+  wire clk;
   wire glb_pre_sw;
   wire liq_sw;
   wire pa_sync;
@@ -1493,18 +1878,21 @@ module uw_engine_imp_1G5W8V5
   wire spi_mosi1;
   wire spi_sck;
   wire [15:0]tick_count;
-  wire uw_ctl_req_safe_halt;
-  wire uw_ctl_req_unsafe_halt;
-  wire uw_ctl_start_fetcher_stb;
+  wire [2:0]uw_ctl_ctl_command;
+  wire uw_ctl_q0_suspend;
+  wire uw_ctl_q1_suspend;
+  wire [63:0]uw_ctl_q1_uw_host_addr;
+  wire [31:0]uw_ctl_q1_uw_host_capacity;
+  wire [63:0]uw_ctl_q1_uwc_provided;
   wire [63:0]uw_ctl_uw_host_addr;
   wire [31:0]uw_ctl_uw_host_capacity;
-  wire [31:0]uw_ctl_uwc_provided;
-  wire [31:0]uw_ctl_uwc_total;
-  wire uw_engine_busy;
+  wire [63:0]uw_ctl_uwc_provided;
   wire uw_engine_glb_pre_sw;
+  wire uw_engine_halted;
   wire uw_engine_liq_sw;
   wire uw_engine_pre0;
   wire uw_engine_pre256;
+  wire uw_engine_q_select;
   wire uw_engine_refn_sw;
   wire uw_engine_refp_sw;
   wire uw_engine_row_tick_stb;
@@ -1520,27 +1908,21 @@ module uw_engine_imp_1G5W8V5
   wire uw_engine_vprebot_sw;
   wire uw_engine_vpretop_sw;
   wire [31:0]uw_fetcher_0_uw_host_free;
-  wire [31:0]uw_fetcher_0_uwc_fetched;
+  wire uw_fetcher_1_alignment_err_stb;
+  wire [511:0]uw_fetcher_1_axis_out_TDATA;
+  wire uw_fetcher_1_axis_out_TREADY;
+  wire uw_fetcher_1_axis_out_TVALID;
+  wire uw_fetcher_1_fifo_ready;
+  wire [31:0]uw_fetcher_1_uw_host_free;
+  wire uw_fetcher_alignment_err_stb;
   wire [511:0]uw_fetcher_axis_out_TDATA;
   wire uw_fetcher_axis_out_TREADY;
   wire uw_fetcher_axis_out_TVALID;
-  wire uw_fetcher_busy;
-  wire [15:0]uw_fetcher_dbg_fifo_entries;
-  wire [2:0]uw_fetcher_dbg_fsm_state;
-  wire uw_fetcher_fifo_loaded;
-  wire uw_fetcher_start_engine_stb;
+  wire uw_fetcher_fifo_ready1;
   wire uw_pulse_pa_pulse;
   wire vprebot_sw;
   wire vpretop_sw;
 
-  assign clk_1 = clk;
-  top_level_system_ila_0_0 system_ila_0
-       (.clk(clk_1),
-        .probe0(uw_engine_busy),
-        .probe1(uw_fetcher_busy),
-        .probe2(uw_fetcher_dbg_fsm_state[0]),
-        .probe3(uw_fetcher_fifo_loaded),
-        .probe4(uw_fetcher_dbg_fifo_entries[0]));
   top_level_uw_ctl_0_0 uw_ctl
        (.S_AXI_ARADDR({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,S_AXI_araddr}),
         .S_AXI_ARPROT(S_AXI_arprot),
@@ -1561,37 +1943,44 @@ module uw_engine_imp_1G5W8V5
         .S_AXI_WREADY(S_AXI_wready),
         .S_AXI_WSTRB({1'b1,1'b1,1'b1,S_AXI_wstrb}),
         .S_AXI_WVALID(S_AXI_wvalid),
-        .clk(clk_1),
-        .req_safe_halt(uw_ctl_req_safe_halt),
-        .req_unsafe_halt(uw_ctl_req_unsafe_halt),
+        .clk(clk),
+        .ctl_command(uw_ctl_ctl_command),
+        .q0_alignment_stb(uw_fetcher_alignment_err_stb),
+        .q0_suspend(uw_ctl_q0_suspend),
+        .q0_uw_host_addr(uw_ctl_uw_host_addr),
+        .q0_uw_host_capacity(uw_ctl_uw_host_capacity),
+        .q0_uwc_host_free(uw_fetcher_0_uw_host_free),
+        .q0_uwc_provided(uw_ctl_uwc_provided),
+        .q1_alignment_stb(uw_fetcher_1_alignment_err_stb),
+        .q1_suspend(uw_ctl_q1_suspend),
+        .q1_uw_host_addr(uw_ctl_q1_uw_host_addr),
+        .q1_uw_host_capacity(uw_ctl_q1_uw_host_capacity),
+        .q1_uwc_host_free(uw_fetcher_1_uw_host_free),
+        .q1_uwc_provided(uw_ctl_q1_uwc_provided),
+        .q_select(uw_engine_q_select),
         .resetn(resetn),
-        .start_fetcher_stb(uw_ctl_start_fetcher_stb),
-        .uw_engine_busy(uw_engine_busy),
-        .uw_fetcher_busy(uw_fetcher_busy),
-        .uw_host_addr(uw_ctl_uw_host_addr),
-        .uw_host_capacity(uw_ctl_uw_host_capacity),
+        .uw_halted(uw_engine_halted),
         .uw_short_uwc_stb(uw_engine_short_uwc_stb),
-        .uw_underflow_stb(uw_engine_underflow_stb),
-        .uwc_fetched(uw_fetcher_0_uwc_fetched),
-        .uwc_host_free(uw_fetcher_0_uw_host_free),
-        .uwc_provided(uw_ctl_uwc_provided),
-        .uwc_total(uw_ctl_uwc_total));
+        .uw_underflow_stb(uw_engine_underflow_stb));
   top_level_uw_engine_0_0 uw_engine
-       (.axis_in_tdata(uw_fetcher_axis_out_TDATA),
-        .axis_in_tready(uw_fetcher_axis_out_TREADY),
-        .axis_in_tvalid(uw_fetcher_axis_out_TVALID),
-        .busy(uw_engine_busy),
-        .clk(clk_1),
-        .fetcher_busy(uw_fetcher_busy),
-        .fifo_loaded(uw_fetcher_fifo_loaded),
+       (.axis_in0_tdata(uw_fetcher_axis_out_TDATA),
+        .axis_in0_tready(uw_fetcher_axis_out_TREADY),
+        .axis_in0_tvalid(uw_fetcher_axis_out_TVALID),
+        .axis_in1_tdata(uw_fetcher_1_axis_out_TDATA),
+        .axis_in1_tready(uw_fetcher_1_axis_out_TREADY),
+        .axis_in1_tvalid(uw_fetcher_1_axis_out_TVALID),
+        .clk(clk),
+        .ctl_command(uw_ctl_ctl_command),
+        .fifo0_ready(uw_fetcher_fifo_ready1),
+        .fifo1_ready(uw_fetcher_1_fifo_ready),
         .glb_pre_sw(uw_engine_glb_pre_sw),
+        .halted(uw_engine_halted),
         .liq_sw(uw_engine_liq_sw),
         .pre0(uw_engine_pre0),
         .pre256(uw_engine_pre256),
+        .q_select(uw_engine_q_select),
         .refn_sw(uw_engine_refn_sw),
         .refp_sw(uw_engine_refp_sw),
-        .req_safe_halt(uw_ctl_req_safe_halt),
-        .req_unsafe_halt(uw_ctl_req_unsafe_halt),
         .resetn(resetn),
         .row_pulse(uw_pulse_pa_pulse),
         .row_tick_stb(uw_engine_row_tick_stb),
@@ -1603,13 +1992,12 @@ module uw_engine_imp_1G5W8V5
         .spi_mosi0(uw_engine_spi_mosi0),
         .spi_mosi1(uw_engine_spi_mosi1),
         .spi_sck(uw_engine_spi_sck),
-        .start_stb(uw_fetcher_start_engine_stb),
         .tick_count(uw_engine_tick_count),
         .underflow_stb(uw_engine_underflow_stb),
         .vprebot_sw(uw_engine_vprebot_sw),
         .vpretop_sw(uw_engine_vpretop_sw));
   top_level_uw_extra_flops_0_0 uw_extra_flops
-       (.clk(clk_1),
+       (.clk(clk),
         .glb_pre_sw(uw_engine_glb_pre_sw),
         .liq_sw(uw_engine_liq_sw),
         .pin_glb_pre_sw(glb_pre_sw),
@@ -1643,64 +2031,106 @@ module uw_engine_imp_1G5W8V5
         .tick_stb(uw_engine_row_tick_stb),
         .vprebot_sw(uw_engine_vprebot_sw),
         .vpretop_sw(uw_engine_vpretop_sw));
-  top_level_uw_fetcher_0_0 uw_fetcher
-       (.M_AXI_ARADDR(M_AXI_araddr),
-        .M_AXI_ARBURST(M_AXI_arburst),
-        .M_AXI_ARCACHE(M_AXI_arcache),
-        .M_AXI_ARID(M_AXI_arid),
-        .M_AXI_ARLEN(M_AXI_arlen),
-        .M_AXI_ARLOCK(M_AXI_arlock),
-        .M_AXI_ARPROT(M_AXI_arprot),
-        .M_AXI_ARQOS(M_AXI_arqos),
-        .M_AXI_ARREADY(M_AXI_arready),
-        .M_AXI_ARSIZE(M_AXI_arsize),
-        .M_AXI_ARVALID(M_AXI_arvalid),
-        .M_AXI_AWADDR(M_AXI_awaddr),
-        .M_AXI_AWBURST(M_AXI_awburst),
-        .M_AXI_AWCACHE(M_AXI_awcache),
-        .M_AXI_AWID(M_AXI_awid),
-        .M_AXI_AWLEN(M_AXI_awlen),
-        .M_AXI_AWLOCK(M_AXI_awlock),
-        .M_AXI_AWPROT(M_AXI_awprot),
-        .M_AXI_AWQOS(M_AXI_awqos),
-        .M_AXI_AWREADY(M_AXI_awready),
-        .M_AXI_AWSIZE(M_AXI_awsize),
-        .M_AXI_AWVALID(M_AXI_awvalid),
-        .M_AXI_BID({1'b0,M_AXI_bid}),
-        .M_AXI_BREADY(M_AXI_bready),
-        .M_AXI_BRESP(M_AXI_bresp),
-        .M_AXI_BVALID(M_AXI_bvalid),
-        .M_AXI_RDATA({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,M_AXI_rdata}),
-        .M_AXI_RID({1'b0,M_AXI_rid}),
-        .M_AXI_RLAST(M_AXI_rlast),
-        .M_AXI_RREADY(M_AXI_rready),
-        .M_AXI_RRESP(M_AXI_rresp),
-        .M_AXI_RVALID(M_AXI_rvalid),
-        .M_AXI_WDATA(M_AXI_wdata),
-        .M_AXI_WLAST(M_AXI_wlast),
-        .M_AXI_WREADY(M_AXI_wready),
-        .M_AXI_WSTRB(M_AXI_wstrb),
-        .M_AXI_WVALID(M_AXI_wvalid),
+  top_level_uw_fetcher_0_0 uw_fetcher_0
+       (.M_AXI_ARADDR(PCI_0_araddr),
+        .M_AXI_ARBURST(PCI_0_arburst),
+        .M_AXI_ARCACHE(PCI_0_arcache),
+        .M_AXI_ARID(PCI_0_arid),
+        .M_AXI_ARLEN(PCI_0_arlen),
+        .M_AXI_ARLOCK(PCI_0_arlock),
+        .M_AXI_ARPROT(PCI_0_arprot),
+        .M_AXI_ARQOS(PCI_0_arqos),
+        .M_AXI_ARREADY(PCI_0_arready),
+        .M_AXI_ARSIZE(PCI_0_arsize),
+        .M_AXI_ARVALID(PCI_0_arvalid),
+        .M_AXI_AWADDR(PCI_0_awaddr),
+        .M_AXI_AWBURST(PCI_0_awburst),
+        .M_AXI_AWCACHE(PCI_0_awcache),
+        .M_AXI_AWID(PCI_0_awid),
+        .M_AXI_AWLEN(PCI_0_awlen),
+        .M_AXI_AWLOCK(PCI_0_awlock),
+        .M_AXI_AWPROT(PCI_0_awprot),
+        .M_AXI_AWQOS(PCI_0_awqos),
+        .M_AXI_AWREADY(PCI_0_awready),
+        .M_AXI_AWSIZE(PCI_0_awsize),
+        .M_AXI_AWVALID(PCI_0_awvalid),
+        .M_AXI_BID({1'b0,PCI_0_bid}),
+        .M_AXI_BREADY(PCI_0_bready),
+        .M_AXI_BRESP(PCI_0_bresp),
+        .M_AXI_BVALID(PCI_0_bvalid),
+        .M_AXI_RDATA({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,PCI_0_rdata}),
+        .M_AXI_RID({1'b0,PCI_0_rid}),
+        .M_AXI_RLAST(PCI_0_rlast),
+        .M_AXI_RREADY(PCI_0_rready),
+        .M_AXI_RRESP(PCI_0_rresp),
+        .M_AXI_RVALID(PCI_0_rvalid),
+        .M_AXI_WDATA(PCI_0_wdata),
+        .M_AXI_WLAST(PCI_0_wlast),
+        .M_AXI_WREADY(PCI_0_wready),
+        .M_AXI_WSTRB(PCI_0_wstrb),
+        .M_AXI_WVALID(PCI_0_wvalid),
+        .alignment_err_stb(uw_fetcher_alignment_err_stb),
         .axis_out_tdata(uw_fetcher_axis_out_TDATA),
         .axis_out_tready(uw_fetcher_axis_out_TREADY),
         .axis_out_tvalid(uw_fetcher_axis_out_TVALID),
-        .busy(uw_fetcher_busy),
-        .clk(clk_1),
-        .dbg_fifo_entries(uw_fetcher_dbg_fifo_entries),
-        .dbg_fsm_state(uw_fetcher_dbg_fsm_state),
-        .engine_busy(uw_engine_busy),
-        .fifo_loaded(uw_fetcher_fifo_loaded),
-        .resetn(resetn),
-        .start_engine_stb(uw_fetcher_start_engine_stb),
-        .start_stb(uw_ctl_start_fetcher_stb),
+        .clk(clk),
+        .fifo_ready(uw_fetcher_fifo_ready1),
+        .suspend(uw_ctl_q0_suspend),
         .uw_host_addr(uw_ctl_uw_host_addr),
         .uw_host_capacity(uw_ctl_uw_host_capacity),
         .uw_host_free(uw_fetcher_0_uw_host_free),
-        .uwc_fetched(uw_fetcher_0_uwc_fetched),
-        .uwc_provided(uw_ctl_uwc_provided),
-        .uwc_total(uw_ctl_uwc_total));
+        .uwc_provided(uw_ctl_uwc_provided));
+  top_level_uw_fetcher_0_1 uw_fetcher_1
+       (.M_AXI_ARADDR(PCI_1_araddr),
+        .M_AXI_ARBURST(PCI_1_arburst),
+        .M_AXI_ARCACHE(PCI_1_arcache),
+        .M_AXI_ARID(PCI_1_arid),
+        .M_AXI_ARLEN(PCI_1_arlen),
+        .M_AXI_ARLOCK(PCI_1_arlock),
+        .M_AXI_ARPROT(PCI_1_arprot),
+        .M_AXI_ARQOS(PCI_1_arqos),
+        .M_AXI_ARREADY(PCI_1_arready),
+        .M_AXI_ARSIZE(PCI_1_arsize),
+        .M_AXI_ARVALID(PCI_1_arvalid),
+        .M_AXI_AWADDR(PCI_1_awaddr),
+        .M_AXI_AWBURST(PCI_1_awburst),
+        .M_AXI_AWCACHE(PCI_1_awcache),
+        .M_AXI_AWID(PCI_1_awid),
+        .M_AXI_AWLEN(PCI_1_awlen),
+        .M_AXI_AWLOCK(PCI_1_awlock),
+        .M_AXI_AWPROT(PCI_1_awprot),
+        .M_AXI_AWQOS(PCI_1_awqos),
+        .M_AXI_AWREADY(PCI_1_awready),
+        .M_AXI_AWSIZE(PCI_1_awsize),
+        .M_AXI_AWVALID(PCI_1_awvalid),
+        .M_AXI_BID({1'b0,PCI_1_bid}),
+        .M_AXI_BREADY(PCI_1_bready),
+        .M_AXI_BRESP(PCI_1_bresp),
+        .M_AXI_BVALID(PCI_1_bvalid),
+        .M_AXI_RDATA({1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,1'b0,PCI_1_rdata}),
+        .M_AXI_RID({1'b0,PCI_1_rid}),
+        .M_AXI_RLAST(PCI_1_rlast),
+        .M_AXI_RREADY(PCI_1_rready),
+        .M_AXI_RRESP(PCI_1_rresp),
+        .M_AXI_RVALID(PCI_1_rvalid),
+        .M_AXI_WDATA(PCI_1_wdata),
+        .M_AXI_WLAST(PCI_1_wlast),
+        .M_AXI_WREADY(PCI_1_wready),
+        .M_AXI_WSTRB(PCI_1_wstrb),
+        .M_AXI_WVALID(PCI_1_wvalid),
+        .alignment_err_stb(uw_fetcher_1_alignment_err_stb),
+        .axis_out_tdata(uw_fetcher_1_axis_out_TDATA),
+        .axis_out_tready(uw_fetcher_1_axis_out_TREADY),
+        .axis_out_tvalid(uw_fetcher_1_axis_out_TVALID),
+        .clk(clk),
+        .fifo_ready(uw_fetcher_1_fifo_ready),
+        .suspend(uw_ctl_q1_suspend),
+        .uw_host_addr(uw_ctl_q1_uw_host_addr),
+        .uw_host_capacity(uw_ctl_q1_uw_host_capacity),
+        .uw_host_free(uw_fetcher_1_uw_host_free),
+        .uwc_provided(uw_ctl_q1_uwc_provided));
   top_level_uw_pulse_0_0 uw_pulse
-       (.clk(clk_1),
+       (.clk(clk),
         .pa_sync(pa_sync),
         .row_pulse(uw_pulse_pa_pulse));
 endmodule
