@@ -1,0 +1,34 @@
+#
+#  This is a script to run a simple userwave
+#
+
+filename=$1; shift
+
+if [ -z $filename ]; then
+    echo "not found:" $filename
+    exit 1
+fi
+
+# Pull in our infrastructure
+source registers
+
+# Place everything into a known starting state
+init
+
+# Load the userwave into host RAM
+userwave_length=$(load_userwave 0 $filename)
+
+# Feed the entire userwave to the fetcher
+provide 0 $userwave_length
+
+# Start the fetcher and the engine running
+start_fetcher 0
+sleep .5
+ctl safe_run 0
+
+# Wait for underflow
+wait_underflow >/dev/null
+
+
+
+

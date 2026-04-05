@@ -15,7 +15,7 @@
 module uw_engine
 (
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
-    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF axis_in0:axis_in1, ASSOCIATED_RESET resetn" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF axis_in0:axis_in1:md_out, ASSOCIATED_RESET resetn" *)
     input   clk,
     input   resetn,
     
@@ -44,6 +44,7 @@ module uw_engine
     // Error strobes
     output reg underflow_stb,  // Ran out of input data too early
     output reg short_uwc_stb,  // A UWC had a duration less than 4
+    output reg md_stall_stb,   // Meta data output stream is stalled
 
     // This will be asserted when a halt-request has been satisfied
     output reg halted,
@@ -96,7 +97,17 @@ module uw_engine
     //=========================================================================
     input [511:0]   axis_in1_tdata,
     input           axis_in1_tvalid,
-    output          axis_in1_tready
+    output          axis_in1_tready,
+    //=========================================================================
+
+
+    //=========================================================================
+    // This is an output stream for writing records that will be used as
+    // meta-data to be transmitted to downstream processes
+    //=========================================================================
+    output reg[511:0] md_out_tdata,
+    output reg        md_out_tvalid,
+    input             md_out_tready
     //=========================================================================
 
 );
@@ -325,12 +336,15 @@ reg next_glb_pre_sw;
 // not instruct the DACS to drive those voltages to the DACs pin until the
 // *next* time we program DAC voltages
 //=============================================================================
-reg[1:0]   fsm_state;
+reg[2:0]   fsm_state;
 localparam FSM_NEXT_UWC       = 0;
 localparam FSM_SETUP_SWITCHES = 1;
-localparam FSM_WAIT_FOR_TICK  = 2;
-localparam FSM_WAIT_TICK_END  = 3;
+localparam FSM_OUTPUT_MD1     = 2;
+localparam FSM_OUTPUT_MD2     = 3;
+localparam FSM_WAIT_FOR_TICK  = 4;
+localparam FSM_WAIT_TICK_END  = 5;
 reg[8:0]   smem_access_counter;
+reg[63:0]  md_timestamp; // Timestamp for meta-data output
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
 
@@ -339,6 +353,11 @@ always @(posedge clk) begin
     short_uwc_stb <= 0;
     pgm_dacs_stb  <= 0;
     row_tick_stb  <= 0;
+    md_stall_stb  <= 0;
+    md_out_tvalid <= 0;
+
+    // Keep a free-running timestamp that will be used by metadata output
+    md_timestamp <= (halted) ? 0: md_timestamp + 1;
 
     // This counts down ticks.  When it's zero, it is safe for
     // other modules to update sensor-chip SMEM
@@ -452,12 +471,32 @@ always @(posedge clk) begin
                     smem_access_counter <= 257;
                     rs0                 <= (uwc_read_phase == 0);
                     rs256               <= (uwc_read_phase == 1);
+                    fsm_state           <= FSM_OUTPUT_MD1;
                 end
-                //-------------------------------------------------------------
 
-                fsm_state <= FSM_WAIT_FOR_TICK;
+                // If we're not about to read the sensor, skip metadata output
+                else fsm_state <= FSM_WAIT_FOR_TICK;
             end
 
+        // Output the 1st clock cycle of meta-data.  If the output stream
+        // is stalled, strobe the "md_stall_stb" error bit
+        FSM_OUTPUT_MD1:
+            begin
+                md_out_tdata  <= {uwc[1][447:0], md_timestamp};
+                md_out_tvalid <= 1;
+                md_stall_stb  <= !md_out_tready;
+                fsm_state     <= FSM_OUTPUT_MD2;
+            end
+
+        // Output the 2nd clock cycle of meta-data.  If the output stream
+        // is stalled, strobe the "md_stall_stb" error bit
+        FSM_OUTPUT_MD2:
+            begin
+                md_out_tdata  <= {uwc[1][511:448]};
+                md_out_tvalid <= 1;
+                md_stall_stb  <= !md_out_tready;
+                fsm_state     <= FSM_WAIT_FOR_TICK;
+            end
 
         // Wait for a tick to happen, then drive the DACs and switches 
         // to their new output values

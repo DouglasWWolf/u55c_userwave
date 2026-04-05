@@ -39,7 +39,7 @@
         "clk": [ { "direction": "in" } ],
         "resetn": [ { "direction": "in" } ],
         "host_buff_size": [ { "direction": "in", "size_left": "63", "size_right": "0" } ],
-        "tick_stb": [ { "direction": "in" } ],
+        "raw_tick_stb": [ { "direction": "in" } ],
         "tick_count": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
         "liq_sw": [ { "direction": "in" } ],
         "vpretop_sw": [ { "direction": "in" } ],

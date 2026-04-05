@@ -1,0 +1,49 @@
+
+#==============================================================================
+# Tests the proper functioning of alignment error checking
+#==============================================================================
+source registers
+test_name="test_md_stall"
+userwave=uw.csv.tmp
+
+cat << EOF >$userwave
+    loop_control : begin loop 5000
+        cmd_duration:257,read_en:1
+    loop_control : end
+EOF
+
+# Load our userwave into queue 0
+userwave_length=$(load_userwave 0 $userwave)
+
+# Initialize everything to a known state
+init
+
+# Tell the fetcher how long the userwave is
+provide 0 $userwave_length
+
+# Start the fetcher and the userwave, and wait for the underflow
+start_fetcher 0
+ctl safe_run 0
+sleep .5
+
+# There should be no errors
+errors=$(axi REG_ERRORS -dec)
+expected=0
+if [ $errors != $expected ]; then
+    fatal "(1) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Stall the metadata output
+axi REG_MD_STALL 1
+sleep .5
+
+# There should be an MD stall error
+errors=$(axi REG_ERRORS -dec)
+expected=$ERR_MD_STALL
+if [ $errors != $expected ]; then
+    fatal "(2) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# If we get here, the test passes
+pass 
+exit 0

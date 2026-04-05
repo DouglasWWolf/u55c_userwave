@@ -311,7 +311,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>tick_stb</spirit:name>
+        <spirit:name>raw_tick_stb</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>

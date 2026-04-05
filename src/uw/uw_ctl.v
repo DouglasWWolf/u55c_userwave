@@ -55,6 +55,9 @@ module uw_ctl # (parameter AW=8)
     input q0_alignment_stb,
     input q1_alignment_stb,
 
+    // Strobes high any time the engine reports a stall on the metadata stream
+    input uw_md_stall_stb,
+
     //================== This is an AXI4-Lite slave interface ==================
         
     // "Specify write address"              -- Master --    -- Slave --
@@ -112,6 +115,7 @@ localparam REG_Q1_UWC_HOST_FREE   = 38;
 
 //==========================================================================
 
+
 //==========================================================================
 // Errors that can be reported in the error register
 //==========================================================================
@@ -119,6 +123,7 @@ localparam ERR_UNDERFLOW = 0;
 localparam ERR_SHORT_UWC = 1;
 localparam ERR_Q0_ALIGN  = 2;
 localparam ERR_Q1_ALIGN  = 3;
+localparam ERR_MD_STALL  = 4;
 //==========================================================================
 
 
@@ -194,25 +199,14 @@ always @(posedge clk) begin
                     REG_CTL_COMMAND:        ctl_command             <= ashi_wdata;
                     REG_ERRORS:             userwave_errors         <= userwave_errors & ~ashi_wdata;
 
-                    REG_Q0_SUSPEND:
-                        begin
-                             q0_suspend <= ashi_wdata[0];
-                             if (ashi_wdata[0]) userwave_errors[ERR_Q0_ALIGN] <= 0;
-                        end
-
+                    REG_Q0_SUSPEND:         q0_suspend              <= ashi_wdata[0];
                     REG_Q0_HOST_ADDR_H:     q0_uw_host_addr[63:32]  <= ashi_wdata;
                     REG_Q0_HOST_ADDR_L:     q0_uw_host_addr[31:00]  <= ashi_wdata;
                     REG_Q0_HOST_CAPACITY:   q0_uw_host_capacity     <= ashi_wdata;
                     REG_Q0_UWC_PROVIDED_H:  q0_uwc_provided_h       <= ashi_wdata;
                     REG_Q0_UWC_PROVIDED_L:  q0_uwc_provided         <= {q0_uwc_provided_h, ashi_wdata};
 
-
-                    REG_Q1_SUSPEND:
-                        begin
-                             q1_suspend <= ashi_wdata[0];
-                             if (ashi_wdata[0]) userwave_errors[ERR_Q1_ALIGN] <= 0;
-                        end
-
+                    REG_Q1_SUSPEND:         q1_suspend              <= ashi_wdata[0];
                     REG_Q1_HOST_ADDR_H:     q1_uw_host_addr[63:32]  <= ashi_wdata;
                     REG_Q1_HOST_ADDR_L:     q1_uw_host_addr[31:00]  <= ashi_wdata;
                     REG_Q1_HOST_CAPACITY:   q1_uw_host_capacity     <= ashi_wdata;
@@ -234,11 +228,12 @@ always @(posedge clk) begin
     if (uw_short_uwc_stb) userwave_errors[ERR_SHORT_UWC] <= 1;
     if (q0_alignment_stb) userwave_errors[ERR_Q0_ALIGN ] <= 1;
     if (q1_alignment_stb) userwave_errors[ERR_Q1_ALIGN ] <= 1;
+    if (uw_md_stall_stb ) userwave_errors[ERR_MD_STALL ] <= 1;
 
 end
 //==========================================================================
 
-
+  
 
 //==========================================================================
 // World's simplest state machine for handling AXI4-Lite read requests

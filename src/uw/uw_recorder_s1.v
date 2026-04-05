@@ -24,8 +24,11 @@ module uw_recorder_s1
     // Must be a power of two
     input[ 63:0]    host_buff_size,
 
-    // When this strobes high, it's time to record input data
-    input           tick_stb,
+    // When this strobes high, it's time to record input data.  This signal
+    // arrives several clock cycles ahead of the recordable signals from the
+    // userwave engine, so (near the bottom of this module) we delay it by
+    // four clock cycles to give time for the other signals to arrive.
+    input           raw_tick_stb,
 
     // Recordable outputs from the userwave engine
     input[ 15:0]    tick_count,
@@ -38,8 +41,10 @@ module uw_recorder_s1
     input           rs0, rs256,
     input           pre0, pre256,
 
-    // The DAC simulators feed us the DAC outputs.  Keep in mind that these
-    // DAC values become valid on the clock-cycle *after* tick_stb occurs.
+    // The DAC simulators feed us the DAC outputs.  These DAC values become
+    // valid on the clock-cycle *after* raw_tick_stb occurs, but that doesn't
+    // matter because we time everything on "tick_stb", which is raw_tick_stb
+    // delayed by 4 clock cycles
     input[127:0]    sim_dac_values_0, sim_dac_values_1,
 
     // How many entries are in the FIFO?
@@ -56,6 +61,9 @@ module uw_recorder_s1
 
 // If we see no userwave ticks for this many cycles, the userwave is done
 localparam TICK_TIMEOUT = 16 * 256;
+
+// This is the "raw_tick_stb" signal, delayed by four clock cycles
+wire tick_stb;
 
 // The records we write out contain a timestamp, measured in ticks
 reg[31:0] timestamp;
@@ -235,6 +243,22 @@ always @(posedge clk) begin
 
 end
 //=============================================================================
+
+
+
+//=============================================================================
+// Delay "raw_tick_stb" by 4 clock cycles to account for the fact that it 
+// arrives several clock cycles earlier that the signals we are recording
+//=============================================================================
+uw_delay # (.WIDTH(1), .DELAY(4), .RESET_ACTIVE(0)) i_delay
+(
+    .clk        (clk),
+    .reset      (resetn),    
+    .signal_in  (raw_tick_stb),
+    .signal_out (tick_stb)
+);
+//=============================================================================
+
 
 
 

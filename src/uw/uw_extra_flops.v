@@ -20,8 +20,6 @@ module uw_extra_flops # (parameter EXTRA_FLOPS = 2)
     input        clk,
     input        resetn,
 
-    input        tick_stb,
-    input[15:0]  tick_count,
     input        liq_sw,
     input        vpretop_sw,
     input        vprebot_sw,
@@ -37,8 +35,6 @@ module uw_extra_flops # (parameter EXTRA_FLOPS = 2)
     input        spi_mosi0,
     input        spi_mosi1,
 
-    output       pin_tick_stb,
-    output[15:0] pin_tick_count,
     output       pin_liq_sw,
     output       pin_vpretop_sw,
     output       pin_vprebot_sw,
@@ -57,7 +53,7 @@ module uw_extra_flops # (parameter EXTRA_FLOPS = 2)
 genvar i;
 
 // This is the number of input signal bits we have
-localparam SIGNAL_COUNT = 31;
+localparam SIGNAL_COUNT = 14;
 
 // This is the last index in the chain
 localparam LAST_INDEX = EXTRA_FLOPS - 1;
@@ -70,8 +66,6 @@ localparam LAST_INDEX = EXTRA_FLOPS - 1;
 //=============================================================================
 wire[SIGNAL_COUNT-1:0] input_word = 
 {
-    tick_stb,
-    tick_count,
     liq_sw,
     vpretop_sw,
     vprebot_sw,
@@ -95,8 +89,6 @@ wire[SIGNAL_COUNT-1:0] input_word =
 //=============================================================================
 assign
 {
-    pin_tick_stb,
-    pin_tick_count,
     pin_liq_sw,
     pin_vpretop_sw,
     pin_vprebot_sw,

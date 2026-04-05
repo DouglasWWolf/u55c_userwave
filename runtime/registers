@@ -30,12 +30,14 @@ REG_Q1_UWC_PROVIDED=$REG_Q1_UWC_PROVIDED_H
 # Userwave recording buffer
 REG_RECORD_BUFF_ADDR=0x2000
 REG_RECORD_BUFF_SIZE=0x2008
+        REG_MD_STALL=0x2010
 
 # Masks for errors
-ERR_UNDERFLOW=1
-ERR_SHORT_UWC=2
+   ERR_UNDERFLOW=1
+   ERR_SHORT_UWC=2
 ERR_Q0_ALIGNMENT=4
 ERR_Q1_ALIGNMENT=8
+    ERR_MD_STALL=16
 
 axi()
 {
@@ -144,6 +146,9 @@ init()
   # Clear any error flags
   axi REG_ERRORS 0xFFFF_FFFF
 
+  # Turn off MD stalls
+  axi REG_MD_STALL 0
+
 }
 
 
@@ -163,6 +168,12 @@ error_text()
 {
   local errors=$1
   local text=
+
+  if [ $((errors & ERR_MD_STALL)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=md_stall
+  fi
+  
   if [ $((errors & ERR_Q1_ALIGNMENT)) -ne 0 ]; then
     test "$text" == "" || text+=", "
     text+=q1_align
@@ -233,10 +244,12 @@ is_halted()
 # Wait for underflow
 wait_underflow()
 {
-  timeout=$1
-  i=0;
+  local timeout=$1
+  test -z $timeout && timeout=999999999
+
+  local i=0;
   while :; do
-    errors=$(( $(axi REG_ERRORS -dec) & ERR_UNDERFLOW))
+    local errors=$(( $(axi REG_ERRORS -dec) & ERR_UNDERFLOW))
     test $errors -eq $ERR_UNDERFLOW && break;
     if [ $i -eq $timeout ]; then
       echo 0
@@ -297,7 +310,7 @@ load_userwave()
 {
   local q=$1
   local filename=$2
-  local binary=uw.bin.tmp
+  local binary=/tmp/uw.bin
   local host_addr
    
 

@@ -1,4 +1,5 @@
 ./test_basic
 ./test_halting
 ./test_alignment_err
+./test_md_stall
 rm *.tmp

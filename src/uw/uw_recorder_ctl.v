@@ -14,7 +14,10 @@
 
 module uw_recorder_ctl # (parameter AW=8)
 (
-    input clk, resetn,
+    (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
+    (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF S_AXI:md_in, ASSOCIATED_RESET resetn" *)
+    input clk,
+    input resetn,
  
     // Must be a 4K boundary
     output reg[63:0] host_buff_addr,
@@ -52,7 +55,13 @@ module uw_recorder_ctl # (parameter AW=8)
     output[31:0]                                            S_AXI_RDATA,
     output                                                  S_AXI_RVALID,
     output[ 1:0]                                            S_AXI_RRESP,
-    input                                   S_AXI_RREADY
+    input                                   S_AXI_RREADY,
+
+
+    // The meta-data stream from the userwave engine
+    input[511:0] md_in_tdata,
+    input        md_in_tvalid,
+    output reg   md_in_tready
     //==========================================================================
 );  
 
@@ -61,6 +70,7 @@ localparam REG_HOST_BUFF_ADDR_H = 0;
 localparam REG_HOST_BUFF_ADDR_L = 1;
 localparam REG_HOST_BUFF_SIZE_H = 2;
 localparam REG_HOST_BUFF_SIZE_L = 3;
+localparam REG_MD_STALL         = 4;
 //==========================================================================
 
 
@@ -107,6 +117,7 @@ always @(posedge clk) begin
         ashi_write_state  <= 0;
         host_buff_addr    <= 64'h2_0000_0000;
         host_buff_size    <= 64'h1_0000_0000;
+        md_in_tready      <= 1;
     end
 
     // Otherwise, we're not in reset...
@@ -125,6 +136,7 @@ always @(posedge clk) begin
                     REG_HOST_BUFF_ADDR_L:   host_buff_addr[31:00] <= ashi_wdata;
                     REG_HOST_BUFF_SIZE_H:   host_buff_size[63:32] <= ashi_wdata;
                     REG_HOST_BUFF_SIZE_L:   host_buff_size[31:00] <= ashi_wdata;
+                    REG_MD_STALL:           md_in_tready          <= !ashi_wdata[0];
 
                     // Writes to any other register are a decode-error
                     default: ashi_wresp <= DECERR;
@@ -163,6 +175,7 @@ always @(posedge clk) begin
             REG_HOST_BUFF_ADDR_L:   ashi_rdata <= host_buff_addr[31:00];
             REG_HOST_BUFF_SIZE_H:   ashi_rdata <= host_buff_size[63:32];
             REG_HOST_BUFF_SIZE_L:   ashi_rdata <= host_buff_size[31:00];
+            REG_MD_STALL:           ashi_rdata <= !md_in_tready;
 
             // Reads of any other register are a decode-error
             default: ashi_rresp <= DECERR;
