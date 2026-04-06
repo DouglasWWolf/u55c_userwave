@@ -294,7 +294,7 @@ load_userwave()
 {
   local q=$1
   local filename=$2
-  local binary=/tmp/uw.bin
+  local binary=$3
   local host_addr
    
 
@@ -302,6 +302,9 @@ load_userwave()
       echo "$filename not found!"
       exit 1
   fi
+
+  # If the user didn't give us the name of the compile userwave, use a default
+  test -z $binary && binary=/tmp/uw.bin.tmp
 
   # Compile the userwave CSV to a binary file
   uwcompile $filename -output $binary || exit 1
@@ -315,6 +318,13 @@ load_userwave()
   # How large of a buffer should we map to hold the userwave?
   local physram_length=$(((file_len + 0x10000) & 0xFFFF0000))
 
+  # Make sure the fetcher isn't running on this queue
+  if [ $q -eq 0 ]; then
+      axi UW_Q0_SUSPEND 1
+  else
+      axi UW_Q1_SUSPEND 1
+  fi
+  
   # Get the address of the host-RAM buffer
   if [ $q -eq 0 ]; then 
     host_addr=$(axi UW_Q0_HOST_ADDR -dec -wide)
@@ -333,6 +343,7 @@ load_userwave()
   # Tell the caller how long the userwave is
   echo $userwave_length
 }
+
 
 #==============================================================================
 # Fetches the error state of an particular error

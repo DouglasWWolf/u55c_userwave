@@ -2,4 +2,5 @@
 ./test_halting
 ./test_alignment_err
 ./test_md_stall
+./test_q_switching
 rm *.tmp

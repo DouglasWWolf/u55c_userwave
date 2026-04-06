@@ -1,0 +1,99 @@
+
+#==============================================================================
+# This tests the ability to switch between input queues
+#==============================================================================
+source api
+test_name="test_q_switching"
+userwave1=/tmp/uw1.csv.tmp
+userwave2=/tmp/uw2.csv.tmp
+userwave3=/tmp/uw3.csv.tmp
+
+# Build our first userwave, with liq_a set to 0x1111
+cat << EOF >$userwave1
+    cmd_index:0 ,cmd_duration : 4,read_phase : 0,read_en : 0,read_start_time : 0,read_bright_flag : 0,read_characterization_id : 0,read_data_type : ,glb_pre_start : 0,glb_pre_duration : 0,roll_pre_top_start : 0,roll_pre_top_duration : 0,roll_pre_bot_start : 0,roll_pre_bot_duration : 0,vpretop_a : 0,vpretop_b : 0,vpretop_sw : 0,vprebot_a : 0,vprebot_b : 0,vprebot_sw : 0,liq_a : 0,liq_b : 0,liq_sw : 0,liq_sw_delay : 0,refp_a : 0,refp_b : 0,refn_a : 0,refn_b : 0,refp_sw : 0,refn_sw : 0,refp_sw_delay : 0,refn_sw_delay : 0
+    loop_control : begin loop 5000
+       cmd_index:0, cmd_duration:400, liq_a:0x1111, read_safe_halting_point:1
+    loop_control : end
+EOF
+
+# Build our second userwave, with liq_a set to 0x2222
+cat << EOF >$userwave2
+    loop_control : begin loop 5000
+       cmd_index:0, cmd_duration:400, liq_a:0x2222, read_safe_halting_point:1
+    loop_control : end
+EOF
+
+# Build our third userwave, with liq_a set to 0x3333
+cat << EOF >$userwave3
+    loop_control : begin loop 5000
+       cmd_index:0, cmd_duration:40000, liq_a:0x3333, read_safe_halting_point:1
+    loop_control : end
+EOF
+
+
+# Initialize everything to a known state
+init
+
+# Start the first userwave running on queue 0
+userwave_length=$(load_userwave 0 $userwave1)
+provide       0 $userwave_length
+start_fetcher 0
+ctl safe_run  0
+sleep .25
+
+# Now switch to the userwave #2 running on queue 1
+userwave_length=$(load_userwave 1 $userwave2)
+provide       1 $userwave_length
+start_fetcher 1
+ctl safe_run  1
+sleep .25
+
+
+# Now switch to the userwave #3 running on queue 0
+userwave_length=$(load_userwave 0 $userwave3)
+provide       0 $userwave_length
+start_fetcher 0
+ctl safe_run  0
+sleep .25
+
+
+# Halt and and check for errors
+ctl safe_halt
+sleep .1
+errors=$(axi UW_ERRORS -dec)
+expected=0
+if [ $errors != $expected ]; then
+    fatal "(1) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# This is what we expect the "uwdump" below to output
+cat << EOF >/tmp/expected.tmp
+liq_a=0x0000@0
+liq_a=0x1111@0
+liq_a=0x2222@0
+liq_a=0x3333@0
+EOF
+
+# Parse the recording of the userwave
+host_addr=$(axi REG_RECORD_BUFF_ADDR -wide -dec)
+uwdump $host_addr | grep liq_a | sed 's/ //g' >/tmp/result.tmp
+
+# Diff the results we got with the results we expected
+diff /tmp/result.tmp /tmp/expected.tmp 1>/dev/null 2>/dev/null
+
+# If we didn't get the expected results, complain about it
+if [ $? -ne 0 ]; then
+    echo "Expected:"
+    echo "---------"
+    cat  /tmp/expected.tmp
+    echo
+    echo "Observed:"
+    echo "---------"
+    cat /tmp/result.tmp
+    echo
+    fatal "Expected result not observed!"
+fi
+
+# If we get here, all is well!
+pass
+exit 0
