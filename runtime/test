@@ -3,4 +3,5 @@
 ./test_alignment_err
 ./test_md_stall
 ./test_q_switching
+./test_engine
 rm *.tmp
