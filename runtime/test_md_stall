@@ -1,8 +1,8 @@
 
 #==============================================================================
-# Tests the proper functioning of alignment error checking
+# Tests the proper functioning of md_stall error checking
 #==============================================================================
-source registers
+source api
 test_name="test_md_stall"
 userwave=uw.csv.tmp
 
@@ -27,10 +27,10 @@ ctl safe_run 0
 sleep .5
 
 # There should be no errors
-errors=$(axi REG_ERRORS -dec)
+errors=$(axi UW_ERRORS -dec)
 expected=0
 if [ $errors != $expected ]; then
-    fatal "(1) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+    fatal "(1) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
 fi
 
 # Stall the metadata output
@@ -38,10 +38,10 @@ axi REG_MD_STALL 1
 sleep .5
 
 # There should be an MD stall error
-errors=$(axi REG_ERRORS -dec)
+errors=$(axi UW_ERRORS -dec)
 expected=$ERR_MD_STALL
 if [ $errors != $expected ]; then
-    fatal "(2) REG_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+    fatal "(2) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
 fi
 
 # If we get here, the test passes

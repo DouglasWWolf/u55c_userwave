@@ -2,7 +2,7 @@
 #==============================================================================
 #  test_halting - Tests safe-halting vs. unsafe halting
 #==============================================================================
-source registers
+source api
 test_name="test_halting"
 userwave=uw.csv.tmp
 

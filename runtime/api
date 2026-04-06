@@ -1,33 +1,7 @@
-BASE_ADDR=0x1000
+# Fetch our register definitions
+source bash_registers fpga_regs.h
 
-      REG_CTL_COMMAND=$((BASE_ADDR + 4 *  0))
-           REG_ERRORS=$((BASE_ADDR + 4 *  1))
-           REG_STATUS=$((BASE_ADDR + 4 *  2))
-       REG_Q0_SUSPEND=$((BASE_ADDR + 4 * 16))
-   REG_Q0_HOST_ADDR_H=$((BASE_ADDR + 4 * 17))
-   REG_Q0_HOST_ADDR_L=$((BASE_ADDR + 4 * 18))
- REG_Q0_HOST_CAPACITY=$((BASE_ADDR + 4 * 19))
-REG_Q0_UWC_PROVIDED_H=$((BASE_ADDR + 4 * 20))
-REG_Q0_UWC_PROVIDED_L=$((BASE_ADDR + 4 * 21))
- REG_Q0_UWC_HOST_FREE=$((BASE_ADDR + 4 * 22))
-
-       REG_Q1_SUSPEND=$((BASE_ADDR + 4 * 32))
-   REG_Q1_HOST_ADDR_H=$((BASE_ADDR + 4 * 33))
-   REG_Q1_HOST_ADDR_L=$((BASE_ADDR + 4 * 34))
- REG_Q1_HOST_CAPACITY=$((BASE_ADDR + 4 * 35))
-REG_Q1_UWC_PROVIDED_H=$((BASE_ADDR + 4 * 36))
-REG_Q1_UWC_PROVIDED_L=$((BASE_ADDR + 4 * 37))
- REG_Q1_UWC_HOST_FREE=$((BASE_ADDR + 4 * 38))
-
-
-
-# Create some synonyms
-REG_Q0_UWC_PROVIDED=$REG_Q0_UWC_PROVIDED_H
-REG_Q1_UWC_PROVIDED=$REG_Q1_UWC_PROVIDED_H
-   REG_Q0_HOST_ADDR=$REG_Q0_HOST_ADDR_H
-   REG_Q1_HOST_ADDR=$REG_Q0_HOST_ADDR_H
-
-# Userwave recording buffer
+# Userwave recording buffer and testing registers
 REG_RECORD_BUFF_ADDR=0x2000
 REG_RECORD_BUFF_SIZE=0x2008
         REG_MD_STALL=0x2010
@@ -39,13 +13,14 @@ ERR_Q0_ALIGNMENT=4
 ERR_Q1_ALIGNMENT=8
     ERR_MD_STALL=16
 
+# A fancy interface to pcireg that understands register names
 axi()
 {
     addr=$(($1))
 
     if [ $addr -eq 0 ]; then
         echo ">>> UNKNOWN REGISTER $1 <<<<"
-        return
+        exit 1
     fi
 
     pcireg $addr $2 $3 $4    
@@ -59,8 +34,6 @@ CTL_REQ_SAFE_RUN_Q1=3
 CTL_REQ_UNSAFE_RUN_Q0=4
 CTL_REQ_UNSAFE_RUN_Q1=5
 
-
-
 ctl()
 {
     if [ ! -z $1 ]; then
@@ -71,22 +44,22 @@ ctl()
 
       case "$cmd" in
         "safe_halt")
-            axi REG_CTL_COMMAND $CTL_REQ_SAFE_HALT
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_HALT
             ;;
         "unsafe_halt")
-            axi REG_CTL_COMMAND $CTL_REQ_UNSAFE_HALT
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_HALT
             ;;
         "unsafe_run0")
-            axi REG_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q0
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q0
             ;;
         "unsafe_run1")
-            axi REG_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q1
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q1
             ;;
         "safe_run0")
-            axi REG_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q0
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q0
             ;;
         "safe_run1")
-            axi REG_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q1
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q1
             ;;
 
         *)
@@ -95,7 +68,7 @@ ctl()
       esac
       return;
     fi
-    code=$(axi REG_CTL_COMMAND -dec)
+    code=$(axi UW_CTL_COMMAND -dec)
 
     case "$code" in
       $CTL_REQ_SAFE_HALT)
@@ -125,33 +98,36 @@ ctl()
 init()
 {
   # Halt any running userwave
-  axi REG_CTL_COMMAND         $CTL_REQ_UNSAFE_HALT
+  axi UW_CTL_COMMAND         $CTL_REQ_UNSAFE_HALT
 
   # Suspend and configure queue 0
-  axi REG_Q0_SUSPEND          1
-  axi REG_Q0_UWC_PROVIDED_H   0 -wide
-  axi REG_Q0_HOST_ADDR_H      0x1_0000_0000 -wide
-  axi REG_Q0_HOST_CAPACITY    0x8000_0000
+  axi UW_Q0_SUSPEND          1
+  axi UW_Q0_UWC_PROVIDED     0 -wide
+  axi UW_Q0_HOST_ADDR        0x1_0000_0000 -wide
+  axi UW_Q0_HOST_CAPACITY    0x8000_0000
 
   # Suspend and configure queue 1
-  axi REG_Q1_SUSPEND          1
-  axi REG_Q1_UWC_PROVIDED_H   0 -wide
-  axi REG_Q1_HOST_ADDR_H      0x1_8000_0000 -wide
-  axi REG_Q1_HOST_CAPACITY    0x8000_0000
+  axi UW_Q1_SUSPEND          1
+  axi UW_Q1_UWC_PROVIDED     0 -wide
+  axi UW_Q1_HOST_ADDR        0x1_8000_0000 -wide
+  axi UW_Q1_HOST_CAPACITY    0x8000_0000
 
   # Tell the system where our userwaves get recorded
   axi REG_RECORD_BUFF_ADDR    0x2_0000_0000 -wide
   axi REG_RECORD_BUFF_SIZE    0x1_0000_0000 -wide
 
-  # Clear any error flags
-  axi REG_ERRORS 0xFFFF_FFFF
-
   # Turn off MD stalls
   axi REG_MD_STALL 0
+
+  # Clear any error flags
+  axi UW_ERRORS 0xFFFF_FFFF
 
 }
 
 
+#
+# Displays a human-readable string for the status bits
+#
 status_text()
 {
   local status=$1
@@ -164,6 +140,9 @@ status_text()
 }
 
 
+#
+# Displays a human readable string for the error bits
+#
 error_text()
 {
   local errors=$1
@@ -201,19 +180,19 @@ error_text()
 
 show_stats()
 {
-    printf "Q0 Host Address is         : 0x%08X\n" $(axi REG_Q0_HOST_ADDR      -dec -wide)  
-    printf "Q0 Userwave capacity is    : 0x%08X\n" $(axi REG_Q0_HOST_CAPACITY  -dec)
-    printf "Q0 UWC provided is         : 0x%08X\n" $(axi REG_Q0_UWC_PROVIDED   -dec -wide)
-    printf "Q0 UWC host free           : 0x%08X\n" $(axi REG_Q0_UWC_HOST_FREE  -dec)
+    printf "Q0 Host Address is         : 0x%08X\n" $(axi UW_Q0_HOST_ADDR      -dec -wide)  
+    printf "Q0 Userwave capacity is    : 0x%08X\n" $(axi UW_Q0_HOST_CAPACITY  -dec)
+    printf "Q0 UWC provided is         : 0x%08X\n" $(axi UW_Q0_UWC_PROVIDED   -dec -wide)
+    printf "Q0 UWC host free           : 0x%08X\n" $(axi UW_Q0_UWC_HOST_FREE  -dec)
     echo
-    printf "Q1 Host Address is         : 0x%08X\n" $(axi REG_Q1_HOST_ADDR      -dec -wide)  
-    printf "Q1 Userwave capacity is    : 0x%08X\n" $(axi REG_Q1_HOST_CAPACITY  -dec)
-    printf "Q1 UWC provided is         : 0x%08X\n" $(axi REG_Q1_UWC_PROVIDED   -dec -wide)
-    printf "Q1 UWC host free           : 0x%08X\n" $(axi REG_Q1_UWC_HOST_FREE  -dec)
+    printf "Q1 Host Address is         : 0x%08X\n" $(axi UW_Q1_HOST_ADDR      -dec -wide)  
+    printf "Q1 Userwave capacity is    : 0x%08X\n" $(axi UW_Q1_HOST_CAPACITY  -dec)
+    printf "Q1 UWC provided is         : 0x%08X\n" $(axi UW_Q1_UWC_PROVIDED   -dec -wide)
+    printf "Q1 UWC host free           : 0x%08X\n" $(axi UW_Q1_UWC_HOST_FREE  -dec)
     echo
 
-    local errors=$(axi REG_ERRORS -dec)
-    local status=$(axi REG_STATUS -dec)
+    local errors=$(axi UW_ERRORS -dec)
+    local status=$(axi UW_STATUS -dec)
     printf "UW Errors                  : 0x%04X  %s\n" $errors  "$(error_text  $errors)"
     printf "UW Status                  : 0x%04X  %s\n" $status  "$(status_text $status)"
 
@@ -237,11 +216,13 @@ pass()
 
 is_halted()
 {
-  echo $(( $(axi REG_STATUS -dec) & 1))
+  echo $(( $(axi UW_STATUS -dec) & 1))
 }
 
 
-# Wait for underflow
+#
+# Wait for an underflow to occur
+#
 wait_underflow()
 {
   local timeout=$1
@@ -249,7 +230,7 @@ wait_underflow()
 
   local i=0;
   while :; do
-    local errors=$(( $(axi REG_ERRORS -dec) & ERR_UNDERFLOW))
+    local errors=$(( $(axi UW_ERRORS -dec) & ERR_UNDERFLOW))
     test $errors -eq $ERR_UNDERFLOW && break;
     if [ $i -eq $timeout ]; then
       echo 0
@@ -263,15 +244,18 @@ wait_underflow()
 }
 
 
+#
+# Provide some userwave commands to a fetcher
+#
 provide()
 {
   local reg
   local val=$2
 
   if [ $1 -eq 0 ]; then
-       reg=REG_Q0_UWC_PROVIDED
+       reg=UW_Q0_UWC_PROVIDED
   else
-       reg=REG_Q1_UWC_PROVIDED
+       reg=UW_Q1_UWC_PROVIDED
   fi
 
   axi $reg $val -wide
@@ -283,9 +267,9 @@ stop_fetcher()
   local reg
 
   if [ $1 -eq 0 ]; then
-       reg=REG_Q0_SUSPEND
+       reg=UW_Q0_SUSPEND
   else
-       reg=REG_Q1_SUSPEND
+       reg=UW_Q1_SUSPEND
   fi
 
   axi $reg 1
@@ -297,9 +281,9 @@ start_fetcher()
   local reg
 
   if [ $1 -eq 0 ]; then
-       reg=REG_Q0_SUSPEND
+       reg=UW_Q0_SUSPEND
   else
-       reg=REG_Q1_SUSPEND
+       reg=UW_Q1_SUSPEND
   fi
 
   axi $reg 0
@@ -333,9 +317,9 @@ load_userwave()
 
   # Get the address of the host-RAM buffer
   if [ $q -eq 0 ]; then 
-    host_addr=$(axi REG_Q0_HOST_ADDR_H -dec -wide)
+    host_addr=$(axi UW_Q0_HOST_ADDR -dec -wide)
   else
-    host_addr=$(axi REG_Q1_HOST_ADDR_H -dec -wide)
+    host_addr=$(axi UW_Q1_HOST_ADDR -dec -wide)
   fi
 
   if [ $host_addr -eq 0 ]; then
@@ -357,7 +341,7 @@ load_userwave()
 get_error_state()
 {
   mask=$(($1))
-  error=$(($(axi REG_ERRORS -dec) & mask))
+  error=$(($(axi UW_ERRORS -dec) & mask))
   test $error -eq 0 && echo "0" || echo "1"
 }
 #==============================================================================

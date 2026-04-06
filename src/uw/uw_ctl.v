@@ -8,9 +8,8 @@
 //=============================================================================
 
 /*
-    User accessible control and status registers for the userwave system
+    Software accessible control and status registers for the userwave system
 */
-
 
 module uw_ctl # (parameter AW=8)
 (
@@ -93,26 +92,132 @@ module uw_ctl # (parameter AW=8)
 );  
 
 //=========================  AXI Register Map  =============================
-localparam REG_CTL_COMMAND         = 0;
-localparam REG_ERRORS              = 1;
-localparam REG_STATUS              = 2;
+/*
+    @register Control command for the userwave engine
+    @rdesc --------------------------------
+    @rdesc 0 = Request a halt    (unsafe)
+    @rdesc 1 = Request a halt    (safe)
+    @rdesc 2 = Run input queue 0 (safe)
+    @rdesc 3 = Run input queue 1 (safe)
+    @rdesc 4 = Run input queue 0 (unsafe)
+    @rdesc 5 = Run input queue 1 (unsafe)
+    @rdesc --------------------------------
+    @rdesc Starting a run on a suspended input queue will immediately
+    @rdesc cause an undeflow error.  Un-suspend the queue before issuing
+    @rdesc a run command for that queue
+   
+*/
 
-localparam REG_Q0_SUSPEND         = 16;
-localparam REG_Q0_HOST_ADDR_H     = 17;
-localparam REG_Q0_HOST_ADDR_L     = 18;
-localparam REG_Q0_HOST_CAPACITY   = 19;
-localparam REG_Q0_UWC_PROVIDED_H  = 20;
-localparam REG_Q0_UWC_PROVIDED_L  = 21;
-localparam REG_Q0_UWC_HOST_FREE   = 22;
+localparam CTL_REQ_UNSAFE_HALT   = 0;
+localparam CTL_REQ_SAFE_HALT     = 1;
+localparam CTL_REQ_SAFE_RUN_Q0   = 2;
+localparam CTL_REQ_SAFE_RUN_Q1   = 3;
+localparam CTL_REQ_UNSAFE_RUN_Q0 = 4;
+localparam CTL_REQ_UNSAFE_RUN_Q1 = 5;
 
-localparam REG_Q1_SUSPEND         = 32;
-localparam REG_Q1_HOST_ADDR_H     = 33;
-localparam REG_Q1_HOST_ADDR_L     = 34;
-localparam REG_Q1_HOST_CAPACITY   = 35;
-localparam REG_Q1_UWC_PROVIDED_H  = 36;
-localparam REG_Q1_UWC_PROVIDED_L  = 37;
-localparam REG_Q1_UWC_HOST_FREE   = 38;
 
+localparam REG_CTL_COMMAND = 0;
+
+/*
+    @register Userwave engine error flags
+    @field underflow     1 0 W1C 0  Userwave host-RAM buffer is empty
+    @field short_uwc     1 1 W1C 0  UWC with duration less than 4 detected
+    @field q0_alignment  1 2 W1C 0  Memory misalignment detected on queue 0
+    @field q1_alignment  1 3 W1C 0  Memory misalignment detected on queue 1
+    @field md_stall      1 4 W1C 0  Stall detected on metadata stream    
+*/
+localparam REG_ERRORS = 1;
+
+/*
+    @register Userwave engine status flags
+    @rtype RO
+    @field halted  1 0 RO 0 Userwave engine is halted
+    @field queue   1 1 RO 0 Which input queue is selected?
+*/
+localparam REG_STATUS = 2;
+
+/*
+    @register Suspend userwave input queue 0, holding it in reset
+    @rdesc    0 = Not suspended, 1 = suspended.
+    @rdesc    A queue should be in the suspended state while
+    @rdesc    it's being configured
+*/
+localparam REG_Q0_SUSPEND = 16;
+
+
+/*
+    @register Userwave input queue 0: address of buffer in host-RAM
+    @rsize 64
+    @rname REG_Q0_HOST_ADDR
+*/
+localparam REG_Q0_HOST_ADDR_H = 17;
+localparam REG_Q0_HOST_ADDR_L = 18;
+
+/*
+    @register Userwave input queue 0: capacity of host-RAM buffer
+    @reg      This value is measured in UWC.  1 UWC is 64 bytes wide.
+*/
+localparam REG_Q0_HOST_CAPACITY = 19;
+
+
+/*
+    @register Userwave input queue 0: the number of UWC that have been
+    @rdesc    written into the queue since the userwave began
+    @rsize 64
+    @rname REG_Q0_UWC_PROVIDED
+*/
+localparam REG_Q0_UWC_PROVIDED_H = 20;
+localparam REG_Q0_UWC_PROVIDED_L = 21;
+
+/*
+    @register Userwave input queue 0: amount of free space in the host RAM buffer.
+    @rdesc    This value is measured in UWC.  1 UWC is 64 bytes
+    @rtype    ro
+*/
+localparam REG_Q0_UWC_HOST_FREE = 22;
+
+
+
+/*
+    @register Suspend userwave input queue 1, holding it in reset
+    @rdesc    0 = Not suspended, 1 = suspended.
+    @rdesc    A queue should be in the suspended state while
+    @rdesc    it's being configured
+*/
+localparam REG_Q1_SUSPEND = 32;
+
+/*
+    @register Userwave input queue 1: address of buffer in host-RAM
+    @rsize 64
+    @rname REG_Q1_HOST_ADDR
+*/
+localparam REG_Q1_HOST_ADDR_H = 33;
+localparam REG_Q1_HOST_ADDR_L = 34;
+
+
+/*
+    @register Userwave input queue 1: capacity of host-RAM buffer
+    @reg      This value is measured in UWC.  1 UWC is 64 bytes wide.
+*/
+localparam REG_Q1_HOST_CAPACITY = 35;
+
+
+/*
+    @register Userwave input queue 1: the number of UWC that have been
+    @rdesc    written into the queue since the userwave began
+    @rsize 64
+    @rname REG_Q1_UWC_PROVIDED
+*/
+localparam REG_Q1_UWC_PROVIDED_H = 36;
+localparam REG_Q1_UWC_PROVIDED_L = 37;
+
+
+/*
+    @register Userwave input queue 0: amount of free space in the host RAM buffer.
+    @rdesc    This value is measured in UWC.  1 UWC is 64 bytes
+    @rtype    ro
+*/
+localparam REG_Q1_UWC_HOST_FREE = 38;
 //==========================================================================
 
 
