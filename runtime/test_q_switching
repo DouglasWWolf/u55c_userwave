@@ -10,7 +10,7 @@ userwave3=/tmp/uw3.csv.tmp
 
 # Build our first userwave, with liq_a set to 0x1111
 cat << EOF >$userwave1
-    cmd_index:0 ,cmd_duration : 4,read_phase : 0,read_en : 0,read_start_time : 0,read_bright_flag : 0,read_characterization_id : 0,read_data_type : ,glb_pre_start : 0,glb_pre_duration : 0,roll_pre_top_start : 0,roll_pre_top_duration : 0,roll_pre_bot_start : 0,roll_pre_bot_duration : 0,vpretop_a : 0,vpretop_b : 0,vpretop_sw : 0,vprebot_a : 0,vprebot_b : 0,vprebot_sw : 0,liq_a : 0,liq_b : 0,liq_sw : 0,liq_sw_delay : 0,refp_a : 0,refp_b : 0,refn_a : 0,refn_b : 0,refp_sw : 0,refn_sw : 0,refp_sw_delay : 0,refn_sw_delay : 0
+    cmd_index:0 ,cmd_duration : 4
     loop_control : begin loop 5000
        cmd_index:0, cmd_duration:400, liq_a:0x1111, read_safe_halting_point:1
     loop_control : end

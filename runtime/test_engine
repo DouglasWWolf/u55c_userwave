@@ -1,0 +1,53 @@
+
+#==============================================================================
+# This is a general test of the userwave enngine outputs
+#==============================================================================
+source api
+test_name="test_engine"
+userwave=engine_test.csv
+binary=/tmp/engine_test.bin.tmp
+
+# Load the userwave
+userwave_length=$(load_userwave 0 $userwave $binary)
+
+# Initialize everything to a known state
+init
+
+# Start the first userwave running on queue 0
+userwave_length=$(load_userwave 0 $userwave)
+provide       0 $userwave_length
+start_fetcher 0
+ctl safe_run  0
+done=$(wait_underflow 20)
+
+# The userwave better end
+test $done -ne 1 && fatal "userwave didn't end!"
+
+# Halt and and check for errors
+ctl safe_halt
+sleep .1
+errors=$(axi UW_ERRORS -dec)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(1) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+
+# Convert the recording of the userwave to human readable text
+host_addr=$(axi REG_RECORD_BUFF_ADDR -wide -dec)
+uwdump $host_addr >/tmp/observed.tmp
+
+# Run the same userwave in simulation
+uwdump -uw $binary >/tmp/expected.tmp
+
+# Diff the results we got with the results we expected
+diff /tmp/observed.tmp /tmp/expected.tmp 1>/dev/null 2>/dev/null
+
+# If we didn't get the expected results, complain about it
+if [ $? -ne 0 ]; then
+    echo "See files /tmp/observed.tmp and /tmp/expected.tmp"
+    fatal "The recorded userwave results are wrong!"
+fi
+
+# If we get here, all is well!
+pass
+exit 0
