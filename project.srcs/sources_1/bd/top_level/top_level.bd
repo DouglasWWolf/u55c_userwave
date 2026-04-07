@@ -3044,7 +3044,7 @@
       },
       "uw_recorder": {
         "interface_ports": {
-          "M_AXI": {
+          "M_PCI": {
             "mode": "Master",
             "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
             "vlnv": "xilinx.com:interface:aximm_rtl:1.0"
@@ -4213,7 +4213,7 @@
           },
           "uw_recorder_s2_0_M_AXI": {
             "interface_ports": [
-              "M_AXI",
+              "M_PCI",
               "uw_recorder_out/M_AXI"
             ]
           }
@@ -4379,7 +4379,7 @@
     "interface_nets": {
       "hier_0_M_AXI": {
         "interface_ports": [
-          "uw_recorder/M_AXI",
+          "uw_recorder/M_PCI",
           "pcie/S01_AXI"
         ]
       },
