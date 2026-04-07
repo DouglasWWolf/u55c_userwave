@@ -20,6 +20,7 @@ git add ${folder}/${project}.srcs
 git add ${folder}/${project}.xpr
 
 git add src xdc runtime grab.sh README.md push
+git add make_fpga_regs
 #git add pre_build.sh post_build.sh release_history.txt
 
 git commit -m "No commit message"
