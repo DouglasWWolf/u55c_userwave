@@ -290,9 +290,6 @@ wire[127:0] dac_values_1 =
 
 // We strobe this high to program the DACs
 reg pgm_dacs_stb;
-
-// This is high when DAC programming is complete
-wire pgm_dacs_complete;
 //=============================================================================
 
 
@@ -606,7 +603,7 @@ uw_dual_ltc2656 i_dual_ltc2656
     .clk            (clk),
     .resetn         (resetn),
     .start_stb      (pgm_dacs_stb),
-    .idle           (pgm_dacs_complete),
+    .idle           (),
     .dac_values_0   (dac_values_0),
     .dac_values_1   (dac_values_1),
     .spi_csld       (spi_csld),
