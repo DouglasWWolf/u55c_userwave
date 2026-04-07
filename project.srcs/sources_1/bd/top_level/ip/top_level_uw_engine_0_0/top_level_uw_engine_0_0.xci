@@ -38,8 +38,8 @@
       "ports": {
         "clk": [ { "direction": "in" } ],
         "resetn": [ { "direction": "in" } ],
-        "fifo0_ready": [ { "direction": "in" } ],
-        "fifo1_ready": [ { "direction": "in" } ],
+        "q0_active": [ { "direction": "in" } ],
+        "q1_active": [ { "direction": "in" } ],
         "ctl_command": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
         "row_pulse": [ { "direction": "in" } ],
         "row_tick_stb": [ { "direction": "out" } ],

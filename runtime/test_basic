@@ -34,7 +34,6 @@ if [ $errors != $expected ]; then
     fatal "(3) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
 fi
 
-
 # Userwave engine should be halted
 halted=$(is_halted)
 expected=1

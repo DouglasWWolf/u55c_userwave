@@ -255,6 +255,9 @@ always @(posedge clk) begin
     end
 
     else case(fsm_state)
+
+        // When triggered to start, the first transaction instructs
+        // the DACs to use the external voltage reference
         0:  if (start_stb) begin
                 pending[0]  <= USE_EXTERNAL_VREF;
                 pending[1]  <= USE_EXTERNAL_VREF;

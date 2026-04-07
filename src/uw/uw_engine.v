@@ -19,10 +19,10 @@ module uw_engine
     input   clk,
     input   resetn,
     
-    // This will be true when the input FIFO has enough data in 
+    // This will be true when the input queue has enough data in 
     // it that we are very unlikely to underflow
-    input   fifo0_ready,
-    input   fifo1_ready,
+    input   q0_active,
+    input   q1_active,
 
     // One of the CTL_XXX commands
     input[2:0] ctl_command,
@@ -198,14 +198,14 @@ wire[511:0] axis_in_tdata;
 wire        axis_in_tvalid;
 wire        axis_in_tready;
 //-----------------------------------------------------------------------------
-assign axis_in_tdata  = q_select ? axis_in1_tdata  : axis_in0_tdata ;
-assign axis_in_tvalid = q_select ? axis_in1_tvalid : axis_in0_tvalid;
+assign axis_in_tdata   = q_select ? axis_in1_tdata  : axis_in0_tdata ;
+assign axis_in_tvalid  = q_select ? axis_in1_tvalid : axis_in0_tvalid;
 assign axis_in0_tready = (axis_in_tready & q_select == 0);
 assign axis_in1_tready = (axis_in_tready & q_select == 1);
 //-------------------------------------------------------------------------------
-wire   fifo_ready[0:1];
-assign fifo_ready[0] = fifo0_ready;
-assign fifo_ready[1] = fifo1_ready;
+wire   q_active[0:1];
+assign q_active[0] = q0_active;
+assign q_active[1] = q1_active;
 //=============================================================================
 
 
@@ -328,23 +328,64 @@ reg next_refp_sw;
 reg next_refn_sw;
 reg next_glb_pre_sw;
 
+//=============================================================================
+// This simple state-machine emits two data-cycles of metadata on the
+// "md_out" stream any time "emit_md_stb" is strobed.
+//=============================================================================
+reg[63:0] md_timestamp;
+reg       emit_md_stb;
+reg       mdsm_state;
+//-----------------------------------------------------------------------------
+always @(posedge clk) begin
+
+    // These strobes high for a single cycle at a time
+    md_stall_stb  <= 0;
+    md_out_tvalid <= 0;
+
+    // Keep a free-running timestamp that will be used as metadata output
+    md_timestamp <= (halted) ? 0: md_timestamp + 1;
+
+    if (resetn == 0) begin
+        mdsm_state <= 0;
+    end
+
+    else case (mdsm_state)
+
+        // If we're told to emit metadata, emit the 1st data-cycle
+        0:  if (emit_md_stb) begin
+                md_out_tdata  <= {uwc[1][447:0], md_timestamp};
+                md_out_tvalid <= 1;
+                md_stall_stb  <= !md_out_tready;
+                mdsm_state    <= 1;
+            end
+
+        // Write out the 2nd data-cycle, and go back to waiting
+        1:  begin
+                md_out_tdata  <= {uwc[1][511:448]};
+                md_out_tvalid <= 1;
+                md_stall_stb  <= !md_out_tready;
+                mdsm_state    <= 0;
+            end
+
+    endcase
+end
+//=============================================================================
+
 
 //=============================================================================
 // This state machine fetches userwave commands and executes them
 //
 // This state machine pre-programs the DACs with the output voltages but does
-// not instruct the DACS to drive those voltages to the DACs pin until the
+// not instruct the DACs to drive those voltages to the output pins until the
 // *next* time we program DAC voltages
 //=============================================================================
-reg[2:0]   fsm_state;
+reg[1:0]   fsm_state;
 localparam FSM_NEXT_UWC       = 0;
 localparam FSM_SETUP_SWITCHES = 1;
-localparam FSM_OUTPUT_MD1     = 2;
-localparam FSM_OUTPUT_MD2     = 3;
-localparam FSM_WAIT_FOR_TICK  = 4;
-localparam FSM_WAIT_TICK_END  = 5;
+localparam FSM_WAIT_FOR_TICK  = 2;
+localparam FSM_WAIT_TICK_END  = 3;
 reg[8:0]   smem_access_counter;
-reg[63:0]  md_timestamp; // Timestamp for meta-data output
+
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
 
@@ -353,11 +394,7 @@ always @(posedge clk) begin
     short_uwc_stb <= 0;
     pgm_dacs_stb  <= 0;
     row_tick_stb  <= 0;
-    md_stall_stb  <= 0;
-    md_out_tvalid <= 0;
-
-    // Keep a free-running timestamp that will be used by metadata output
-    md_timestamp <= (halted) ? 0: md_timestamp + 1;
+    emit_md_stb   <= 0;
 
     // This counts down ticks.  When it's zero, it is safe for
     // other modules to update sensor-chip SMEM
@@ -408,7 +445,6 @@ always @(posedge clk) begin
 
                 tick_count <= 0;
                 fsm_state  <= FSM_SETUP_SWITCHES;
-
             end
             
 
@@ -468,34 +504,14 @@ always @(posedge clk) begin
                 // to update sensor-chip SMEM until 256 row_periods have passed 
                 // (plus 1 to account for the starting tick)
                 if (uwc_read_en && uwc_read_start_time == tick_count) begin
-                    smem_access_counter <= 257;
-                    rs0                 <= (uwc_read_phase == 0);
-                    rs256               <= (uwc_read_phase == 1);
-                    fsm_state           <= FSM_OUTPUT_MD1;
+                    smem_access_counter <= 257;                   // Turn off SMEM access
+                    rs0                 <= (uwc_read_phase == 0); // Turn on/off rs0
+                    rs256               <= (uwc_read_phase == 1); // Turn on/off rs256
+                    emit_md_stb         <= 1;                     // Emit metadata
                 end
 
-                // If we're not about to read the sensor, skip metadata output
-                else fsm_state <= FSM_WAIT_FOR_TICK;
-            end
-
-        // Output the 1st clock cycle of meta-data.  If the output stream
-        // is stalled, strobe the "md_stall_stb" error bit
-        FSM_OUTPUT_MD1:
-            begin
-                md_out_tdata  <= {uwc[1][447:0], md_timestamp};
-                md_out_tvalid <= 1;
-                md_stall_stb  <= !md_out_tready;
-                fsm_state     <= FSM_OUTPUT_MD2;
-            end
-
-        // Output the 2nd clock cycle of meta-data.  If the output stream
-        // is stalled, strobe the "md_stall_stb" error bit
-        FSM_OUTPUT_MD2:
-            begin
-                md_out_tdata  <= {uwc[1][511:448]};
-                md_out_tvalid <= 1;
-                md_stall_stb  <= !md_out_tready;
-                fsm_state     <= FSM_WAIT_FOR_TICK;
+                // Go wait for the tick to occur
+                fsm_state <= FSM_WAIT_FOR_TICK;
             end
 
         // Wait for a tick to happen, then drive the DACs and switches 
@@ -517,7 +533,10 @@ always @(posedge clk) begin
         // the next tick. When it does, decide whether we are going to fetch
         // a new UWC or whether we are still executing the current UWC.
         FSM_WAIT_TICK_END:
+           
             if (row_pulse == 0) begin
+
+                // These are only asserted for a single tick in a given UWC
                 rs0   <= 0;
                 rs256 <= 0;
 
@@ -528,31 +547,37 @@ always @(posedge clk) begin
                     fsm_state  <= FSM_SETUP_SWITCHES;
                 end
 
-                // We've reached the end of the current UWC, check to see
-                // if a halt has been requested. 
+                // We've reached the end of the current UWC. Check to see
+                // what the current ctl_command is, and perform that action
                 else begin
+                    
+                    // Do this just in case the UWC left them asserted
                     pre0   <= 0; 
                     pre256 <= 0; 
 
-                    // Are we switching to "run" mode?
-                    if (req_run & fifo_ready[req_q]) begin
+                    // Are we either in run mode or switching to run mode?
+                    if (req_run) begin
                         
-                        // If we're not switching queues, just unhalt
-                        if (q_select == req_q)
-                            halted <= 0;
+                        // We're allowed to start running only from an 
+                        // active input queue
+                        if (q_active[req_q]) begin
 
-                        // Switch queues only if we're allowed
-                        else if (uwc_read_safe_halting_point | req_unsafe) begin
-                            halted   <= 0;
-                            q_select <= req_q;
+                            // If we're not switching queues, just unhalt
+                            if (q_select == req_q)
+                                halted <= 0;
+
+                            // Switch queues only if we're allowed
+                            else if (uwc_read_safe_halting_point | req_unsafe) begin
+                                halted   <= 0;
+                                q_select <= req_q;
+                            end
                         end
                     end
                     
                     // Otherwise, we're trying to halt...
-                    else begin
-                        halted <= (uwc_read_safe_halting_point | req_unsafe);
-                    end
+                    else halted <= (uwc_read_safe_halting_point | req_unsafe);
 
+                    // Go fetch the userwave command
                     fsm_state <= FSM_NEXT_UWC;
                 end
                
@@ -735,8 +760,5 @@ uw_encode_uwc i_nop
     .cmd_index                (uwc_cmd_index       )
 );
 //=============================================================================
-
-
-
 
 endmodule

@@ -1,7 +1,7 @@
-./test_basic
-./test_halting
-./test_alignment_err
-./test_md_stall
-./test_q_switching
-./test_engine
+./test_basic || exit 
+./test_halting || exit 	
+./test_alignment_err || exit
+./test_md_stall || exit
+./test_q_switching || exit
+./test_engine || exit
 rm *.tmp

@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "top_level_uw_fetcher_0_0",
-    "cell_name": "uw_engine/uw_fetcher_0",
+    "cell_name": "uw_engine/q0_fetcher",
     "component_reference": "xilinx.com:module_ref:uw_fetcher:1.0",
     "ip_revision": "1",
     "gen_directory": "../../../../../../project.gen/sources_1/bd/top_level/ip/top_level_uw_fetcher_0_0",
@@ -46,7 +46,7 @@
       "ports": {
         "clk": [ { "direction": "in" } ],
         "suspend": [ { "direction": "in" } ],
-        "fifo_ready": [ { "direction": "out" } ],
+        "q_active": [ { "direction": "out" } ],
         "uw_host_addr": [ { "direction": "in", "size_left": "63", "size_right": "0" } ],
         "uw_host_capacity": [ { "direction": "in", "size_left": "31", "size_right": "0" } ],
         "uwc_provided": [ { "direction": "in", "size_left": "63", "size_right": "0" } ],

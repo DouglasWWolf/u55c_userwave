@@ -41,6 +41,14 @@ start_fetcher 0
 ctl safe_run  0
 sleep .25
 
+# The "queue 0 is active" status bit should be set
+status=$(axi UW_STATUS -dec)
+expected=$((STAT_Q0_ACTIVE | STAT_Q0_SELECTED))
+if [ $status != $expected ]; then
+    fatal "(1) UW_STATUS should be 0x%04X not 0x%04X" $expected $status
+fi
+
+
 # Now switch to the userwave #2 running on queue 1
 userwave_length=$(load_userwave 1 $userwave2)
 provide       1 $userwave_length
@@ -48,6 +56,12 @@ start_fetcher 1
 ctl safe_run  1
 sleep .25
 
+# The "queue 1 is active" status bit should now be set
+status=$(axi UW_STATUS -dec)
+expected=$((STAT_Q1_ACTIVE | STAT_Q0_ACTIVE | STAT_Q1_SELECTED ))
+if [ $status != $expected ]; then
+    fatal "(2) UW_STATUS should be 0x%04X not 0x%04X" $expected $status
+fi
 
 # Now switch to the userwave #3 running on queue 0
 userwave_length=$(load_userwave 0 $userwave3)
@@ -56,6 +70,13 @@ start_fetcher 0
 ctl safe_run  0
 sleep .25
 
+# The "queue 0 is active" status bit should be set
+status=$(axi UW_STATUS -dec)
+expected=$((STAT_Q0_ACTIVE | STAT_Q1_ACTIVE | STAT_Q0_SELECTED))
+if [ $status != $expected ]; then
+    fatal "(3) UW_STATUS should be 0x%04X not 0x%04X" $expected $status
+fi
+
 
 # Halt and and check for errors
 ctl safe_halt
@@ -63,7 +84,7 @@ sleep .1
 errors=$(axi UW_ERRORS -dec)
 expected=0
 if [ $errors != $expected ]; then
-    fatal "(1) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+    fatal "(4) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
 fi
 
 # This is what we expect the "uwdump" below to output

@@ -6,6 +6,13 @@ REG_RECORD_BUFF_ADDR=0x2000
 REG_RECORD_BUFF_SIZE=0x2008
         REG_MD_STALL=0x2010
 
+# Masks for status bits
+     STAT_HALTED=1
+STAT_Q0_SELECTED=0
+STAT_Q1_SELECTED=2
+  STAT_Q0_ACTIVE=4
+  STAT_Q1_ACTIVE=8
+
 # Masks for errors
    ERR_UNDERFLOW=1
    ERR_SHORT_UWC=2
@@ -132,10 +139,13 @@ status_text()
 {
   local status=$1
   local text=
-  test -z $text || text="${text}, "
-  test $((status & 2)) -eq 0 && text=${text}q0 || text=${text}q1
-  test -z $text || text="${text}, "
-  test $((status & 1)) -eq 0 && text=${text}running || text=${text}halted
+  test $((status & 8)) -eq 0 && text=${text}q1_idle     || text=${text}q1_active
+  test -z "$text" || text="${text}, "
+  test $((status & 4)) -eq 0 && text=${text}q0_idle     || text=${text}q0_active
+  test -z "$text" || text="${text}, "
+  test $((status & 2)) -eq 0 && text=${text}q0          || text=${text}q1
+  test -z "$text" || text="${text}, "
+  test $((status & 1)) -eq 0 && text=${text}running     || text=${text}halted
   echo "(${text})"
 }
 

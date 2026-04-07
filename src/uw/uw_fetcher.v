@@ -24,7 +24,6 @@
 
 module uw_fetcher # (parameter DW = 512, AW=64, IW = 2)
 (
-
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
     (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF M_AXI:axis_out" *)
     input   clk,
@@ -32,10 +31,10 @@ module uw_fetcher # (parameter DW = 512, AW=64, IW = 2)
     // When this is high, it is effectively a reset
     (* direct_reset = "true" *) input suspend,
 
-    // This will be high for at least one clock cycle when there is 
-    // sufficient data in the FIFO that the engine can begin running
-    // the userwave without danger of underflow
-    output  fifo_ready,
+    // This will be high after the FIFO has been initially filled with
+    // sufficient data such the engine can begin running the userwave
+    // without danger of underflow
+    output  q_active,
 
     // The address in host-RAM where the userwave commands reside
     input[63:0] uw_host_addr,
@@ -278,7 +277,8 @@ assign M_AXI_ARVALID = (fsm_state == FSM_FETCH_BLOCK);
 assign M_AXI_RREADY  = 1;
 
 //=============================================================================
-// Tell the engine when the FIFO has enough data to begin processing
+// Tell the engine when the FIFO has enough data to begin processing.  Once
+// the "fifo_loaded" flag is set, it remains set until software suspends us
 //=============================================================================
 reg fifo_loaded;
 //-----------------------------------------------------------------------------
@@ -293,7 +293,7 @@ end
 //=============================================================================
 
 //=============================================================================
-// "fifo_ready" is "fifo_loaded" but delayed by two clock-cycles.
+// "q_active" is "fifo_loaded" but delayed by two clock-cycles.
 // We do this so that the by the time the userwave engine sees this signal,
 // the FIFO entries have had a chance to percolate through the FIFO and
 // are ready for fetching by the engine
@@ -303,7 +303,7 @@ uw_delay # (.WIDTH(1), .DELAY(2), .RESET_ACTIVE(1)) i_delay
     .clk        (clk),
     .reset      (suspend),
     .signal_in  (fifo_loaded),
-    .signal_out (fifo_ready)
+    .signal_out (q_active)
 );
 //=============================================================================
 

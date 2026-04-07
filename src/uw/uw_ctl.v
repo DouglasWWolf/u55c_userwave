@@ -44,6 +44,11 @@ module uw_ctl # (parameter AW=8)
     // Which input queue is the userwave engine currently using?
     input q_select,
 
+    // These are asserted if the corresponding input queue has data ready
+    // to feed to the engine
+    input q0_active,
+    input q1_active,
+
     // Strobes high any time the userwave engine reports an underflow
     input uw_underflow_stb,
 
@@ -131,8 +136,10 @@ localparam REG_ERRORS = 1;
 /*
     @register Userwave engine status flags
     @rtype RO
-    @field halted  1 0 RO 0 Userwave engine is halted
-    @field queue   1 1 RO 0 Which input queue is selected?
+    @field halted    1 0 RO 0 Userwave engine is halted
+    @field queue     1 1 RO 0 Which input queue is selected?
+    @field q0_active 1 2 RO 0 Does queue 0 have data ready to feed?
+    @field q1_active 1 3 RO 0 Does queue 1 have data ready to feed?
 */
 localparam REG_STATUS = 2;
 
@@ -301,22 +308,22 @@ always @(posedge clk) begin
 
                 // ashi_windex = index of register to be written
                 case (ashi_windx)
-                    REG_CTL_COMMAND:        ctl_command             <= ashi_wdata;
-                    REG_ERRORS:             userwave_errors         <= userwave_errors & ~ashi_wdata;
+                    REG_CTL_COMMAND:        ctl_command     <= ashi_wdata;
+                    REG_ERRORS:             userwave_errors <= userwave_errors & ~ashi_wdata;
 
-                    REG_Q0_SUSPEND:         q0_suspend              <= ashi_wdata[0];
-                    REG_Q0_HOST_ADDR_H:     q0_uw_host_addr[63:32]  <= ashi_wdata;
-                    REG_Q0_HOST_ADDR_L:     q0_uw_host_addr[31:00]  <= ashi_wdata;
-                    REG_Q0_HOST_CAPACITY:   q0_uw_host_capacity     <= ashi_wdata;
-                    REG_Q0_UWC_PROVIDED_H:  q0_uwc_provided_h       <= ashi_wdata;
-                    REG_Q0_UWC_PROVIDED_L:  q0_uwc_provided         <= {q0_uwc_provided_h, ashi_wdata};
+                    REG_Q0_SUSPEND:                         q0_suspend             <= ashi_wdata[0];
+                    REG_Q0_UWC_PROVIDED_H:                  q0_uwc_provided_h      <= ashi_wdata;
+                    REG_Q0_UWC_PROVIDED_L:                  q0_uwc_provided        <= {q0_uwc_provided_h, ashi_wdata};
+                    REG_Q0_HOST_ADDR_H:     if (q0_suspend) q0_uw_host_addr[63:32] <= ashi_wdata;
+                    REG_Q0_HOST_ADDR_L:     if (q0_suspend) q0_uw_host_addr[31:00] <= ashi_wdata;
+                    REG_Q0_HOST_CAPACITY:   if (q0_suspend) q0_uw_host_capacity    <= ashi_wdata;
 
-                    REG_Q1_SUSPEND:         q1_suspend              <= ashi_wdata[0];
-                    REG_Q1_HOST_ADDR_H:     q1_uw_host_addr[63:32]  <= ashi_wdata;
-                    REG_Q1_HOST_ADDR_L:     q1_uw_host_addr[31:00]  <= ashi_wdata;
-                    REG_Q1_HOST_CAPACITY:   q1_uw_host_capacity     <= ashi_wdata;
-                    REG_Q1_UWC_PROVIDED_H:  q1_uwc_provided_h       <= ashi_wdata;
-                    REG_Q1_UWC_PROVIDED_L:  q1_uwc_provided         <= {q1_uwc_provided_h, ashi_wdata};
+                    REG_Q1_SUSPEND:                         q1_suspend             <= ashi_wdata[0];
+                    REG_Q1_UWC_PROVIDED_H:                  q1_uwc_provided_h      <= ashi_wdata;
+                    REG_Q1_UWC_PROVIDED_L:                  q1_uwc_provided        <= {q1_uwc_provided_h, ashi_wdata};
+                    REG_Q1_HOST_ADDR_H:     if (q1_suspend) q1_uw_host_addr[63:32] <= ashi_wdata;
+                    REG_Q1_HOST_ADDR_L:     if (q1_suspend) q1_uw_host_addr[31:00] <= ashi_wdata;
+                    REG_Q1_HOST_CAPACITY:   if (q1_suspend) q1_uw_host_capacity    <= ashi_wdata;
 
                     // Writes to any other register are a decode-error
                     default: ashi_wresp <= DECERR;
@@ -360,7 +367,12 @@ always @(posedge clk) begin
 
             REG_CTL_COMMAND:        ashi_rdata <= ctl_command;
             REG_ERRORS:             ashi_rdata <= userwave_errors;
-            REG_STATUS:             ashi_rdata <= {q_select, uw_halted};
+            REG_STATUS:             ashi_rdata <= {
+                                                    q1_active,
+                                                    q0_active,
+                                                    q_select,
+                                                    uw_halted
+                                                  };
 
             REG_Q0_SUSPEND:         ashi_rdata <= q0_suspend;
             REG_Q0_HOST_ADDR_H:     ashi_rdata <= q0_uw_host_addr[63:32];
