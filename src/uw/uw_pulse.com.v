@@ -16,9 +16,10 @@
         Our output row_pulse will rise two clock cycles prior to the
         rise of the pa_sync input pin.
 
-    Because the timing of "pa_sync" can jitter around by 1 or 2 clock cycles,
-    we will not always meet the timing of our perfect case, but we will be
-    very close.
+    Because the timing of "pa_sync" can hypothetically jitter around by 1 or 2
+    clock cycles, we will not always meet the timing of our perfect case, but
+    we will be very close.  (In practice, pa_sync doesn't appear to jitter at
+    all, but it is safer to assume that it occasionally does)
 
     Our output "row_pulse" falls exactly 128 clock cycles after it rises.  This
     signals the downstream logic that it is safe to set up new values for

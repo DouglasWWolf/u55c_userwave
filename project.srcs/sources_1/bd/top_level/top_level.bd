@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x355BE9FA7C42084B",
+      "boundary_crc": "0x355BE9FA5FDD265D",
       "device": "xcu55c-fsvh2892-2L-e",
       "gen_directory": "../../../../project.gen/sources_1/bd/top_level",
       "name": "top_level",
@@ -2003,17 +2003,7 @@
             "ports": {
               "clk": {
                 "type": "clk",
-                "direction": "I",
-                "parameters": {
-                  "FREQ_HZ": {
-                    "value": "250000000",
-                    "value_src": "user_prop"
-                  },
-                  "CLK_DOMAIN": {
-                    "value": "top_level_xdma_0_0_axi_aclk",
-                    "value_src": "default_prop"
-                  }
-                }
+                "direction": "I"
               },
               "pa_sync": {
                 "direction": "I"
@@ -2635,12 +2625,12 @@
           "clk_1": {
             "ports": [
               "clk",
-              "uw_pulse/clk",
               "uw_extra_flops/clk",
               "uw_ctl/clk",
               "q0_fetcher/clk",
               "q1_fetcher/clk",
-              "uw_engine/clk"
+              "uw_engine/clk",
+              "uw_pulse/clk"
             ]
           },
           "pa_sync_1": {
