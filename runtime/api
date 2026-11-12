@@ -1,0 +1,389 @@
+# Fetch our register definitions
+source bash_registers fpga_reg.h
+
+# Userwave recording buffer and testing registers
+REG_RECORD_BUFF_ADDR=0x4000000000002000
+REG_RECORD_BUFF_SIZE=0x2008
+        REG_MD_STALL=0x2010
+
+# Masks for status bits
+     STAT_HALTED=1
+STAT_Q0_SELECTED=0
+STAT_Q1_SELECTED=2
+  STAT_Q0_ACTIVE=4
+  STAT_Q1_ACTIVE=8
+
+# Masks for errors
+   ERR_UNDERFLOW=1
+   ERR_SHORT_UWC=2
+ERR_Q0_ALIGNMENT=4
+ERR_Q1_ALIGNMENT=8
+    ERR_MD_STALL=16
+
+# A fancy interface to pcireg that understands register names
+axi()
+{
+    addr=$(($1))
+
+    if [ $addr -eq 0 ]; then
+        echo ">>> UNKNOWN REGISTER $1 <<<<"
+        exit 1
+    fi
+
+    pcireg $addr $2 $3 $4    
+}
+
+
+# A fancy interface to pcireg that understands register names
+get()
+{
+    addr=$(($1))
+
+    if [ $addr -eq 0 ]; then
+        echo ">>> UNKNOWN REGISTER $1 <<<<"
+        exit 1
+    fi
+
+    pcireg -dec $addr $2 $3 $4    
+}
+
+
+
+
+
+# The legal values of "ctl_command"
+CTL_REQ_UNSAFE_HALT=0;
+CTL_REQ_SAFE_HALT=1
+CTL_REQ_SAFE_RUN_Q0=2
+CTL_REQ_SAFE_RUN_Q1=3
+CTL_REQ_UNSAFE_RUN_Q0=4
+CTL_REQ_UNSAFE_RUN_Q1=5
+
+ctl()
+{
+    if [ ! -z $1 ]; then
+      local cmd=$1
+      local q=$2
+      test $cmd == safe_run && cmd=$cmd$q
+      test $cmd == unsafe_run && cmd=$cmd$q
+
+      case "$cmd" in
+        "safe_halt")
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_HALT
+            ;;
+        "unsafe_halt")
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_HALT
+            ;;
+        "unsafe_run0")
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q0
+            ;;
+        "unsafe_run1")
+            axi UW_CTL_COMMAND $CTL_REQ_UNSAFE_RUN_Q1
+            ;;
+        "safe_run0")
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q0
+            ;;
+        "safe_run1")
+            axi UW_CTL_COMMAND $CTL_REQ_SAFE_RUN_Q1
+            ;;
+
+        *)
+            echo "syntax"
+            ;;
+      esac
+      return;
+    fi
+    code=$(get UW_CTL_COMMAND)
+
+    case "$code" in
+      $CTL_REQ_SAFE_HALT)
+        echo "safe_halt"
+        ;;
+      $CTL_REQ_UNSAFE_HALT)
+        echo "unsafe_halt"
+        ;;
+      $CTL_REQ_UNSAFE_RUN_Q0)
+        echo "unsafe_run0"
+        ;;
+      $CTL_REQ_UNSAFE_RUN_Q1)
+        echo "unsafe_run1"
+        ;;
+      $CTL_REQ_SAFE_RUN_Q0)
+        echo "safe_run0"
+        ;;
+      $CTL_REQ_SAFE_RUN_Q1)
+        echo "safe_run1"
+        ;;
+      *)
+        echo $code
+        ;;
+    esac
+}
+
+init()
+{
+  # Halt any running userwave
+  axi UW_CTL_COMMAND         $CTL_REQ_UNSAFE_HALT
+
+  # Suspend and configure queue 0
+  axi UW_Q0_SUSPEND          1
+  axi UW_Q0_UWC_PROVIDED     0 
+  axi UW_Q0_HOST_ADDR        0x1_0000_0000
+  axi UW_Q0_HOST_CAPACITY    0x8000_0000
+
+  # Suspend and configure queue 1
+  axi UW_Q1_SUSPEND          1
+  axi UW_Q1_UWC_PROVIDED     0 
+  axi UW_Q1_HOST_ADDR        0x1_8000_0000
+  axi UW_Q1_HOST_CAPACITY    0x8000_0000
+
+  # Tell the system where our userwaves get recorded
+  axi REG_RECORD_BUFF_ADDR    0x2_0000_0000 
+  axi REG_RECORD_BUFF_SIZE    0x1_0000_0000
+
+  # Turn off MD stalls
+  axi REG_MD_STALL 0
+
+  # Give the userwave control over all voltages
+  axi UW_DAC_MASK 0
+
+  # Clear any error flags
+  axi UW_ERRORS 0xFFFF_FFFF
+
+}
+
+
+#
+# Displays a human-readable string for the status bits
+#
+status_text()
+{
+  local status=$1
+  local text=
+  test $((status & 8)) -eq 0 && text=${text}q1_idle     || text=${text}q1_active
+  test -z "$text" || text="${text}, "
+  test $((status & 4)) -eq 0 && text=${text}q0_idle     || text=${text}q0_active
+  test -z "$text" || text="${text}, "
+  test $((status & 2)) -eq 0 && text=${text}q0          || text=${text}q1
+  test -z "$text" || text="${text}, "
+  test $((status & 1)) -eq 0 && text=${text}running     || text=${text}halted
+  echo "(${text})"
+}
+
+
+#
+# Displays a human readable string for the error bits
+#
+error_text()
+{
+  local errors=$1
+  local text=
+
+  if [ $((errors & ERR_MD_STALL)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=md_stall
+  fi
+  
+  if [ $((errors & ERR_Q1_ALIGNMENT)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=q1_align
+  fi
+
+  if [ $((errors & ERR_Q0_ALIGNMENT)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=q0_align
+  fi
+
+  if [ $((errors & ERR_SHORT_UWC)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=short_uwc
+  fi
+
+  if [ $((errors & ERR_UNDERFLOW)) -ne 0 ]; then
+    test "$text" == "" || text+=", "
+    text+=underflow
+  fi
+
+  test -z "$text" && echo || echo "($text)"
+}
+
+
+
+show_stats()
+{
+    printf "Q0 Host Address is         : 0x%08X\n" $(get UW_Q0_HOST_ADDR    )  
+    printf "Q0 Userwave capacity is    : 0x%08X\n" $(get UW_Q0_HOST_CAPACITY)
+    printf "Q0 UWC provided is         : 0x%08X\n" $(get UW_Q0_UWC_PROVIDED )
+    printf "Q0 UWC host free           : 0x%08X\n" $(get UW_Q0_UWC_HOST_FREE)
+    echo
+    printf "Q1 Host Address is         : 0x%08X\n" $(get UW_Q1_HOST_ADDR    )  
+    printf "Q1 Userwave capacity is    : 0x%08X\n" $(get UW_Q1_HOST_CAPACITY)
+    printf "Q1 UWC provided is         : 0x%08X\n" $(get UW_Q1_UWC_PROVIDED )
+    printf "Q1 UWC host free           : 0x%08X\n" $(get UW_Q1_UWC_HOST_FREE)
+    echo
+
+    local errors=$(get UW_ERRORS)
+    local status=$(get UW_STATUS)
+    printf "UW Errors                  : 0x%04X  %s\n" $errors  "$(error_text  $errors)"
+    printf "UW Status                  : 0x%04X  %s\n" $status  "$(status_text $status)"
+
+    printf "\n"
+}
+
+
+fatal()
+{
+    echo "In test: $test_name"
+    printf "$1" $2 $3 $4 $5 $7 $8 $9
+    printf "\n"
+    exit 1
+}
+
+pass()
+{
+    printf "%30s ... PASSED\n" $test_name
+}
+
+
+is_halted()
+{
+  echo $(( $(get UW_STATUS) & 1))
+}
+
+
+#
+# Wait for an underflow to occur
+#
+wait_underflow()
+{
+  local timeout=$1
+  test -z $timeout && timeout=999999999
+
+  local i=0;
+  while :; do
+    local errors=$(( $(get UW_ERRORS) & ERR_UNDERFLOW))
+    test $errors -eq $ERR_UNDERFLOW && break;
+    if [ $i -eq $timeout ]; then
+      echo 0
+      return
+    fi
+    i=$((i + 1))
+    sleep 1
+  done
+
+  echo 1
+}
+
+
+#
+# Provide some userwave commands to a fetcher
+#
+provide()
+{
+  local reg
+  local val=$2
+
+  if [ $1 -eq 0 ]; then
+       reg=UW_Q0_UWC_PROVIDED
+  else
+       reg=UW_Q1_UWC_PROVIDED
+  fi
+
+  axi $reg $val
+}
+
+
+stop_fetcher()
+{
+  local reg
+
+  if [ $1 -eq 0 ]; then
+       reg=UW_Q0_SUSPEND
+  else
+       reg=UW_Q1_SUSPEND
+  fi
+
+  axi $reg 1
+}
+
+
+start_fetcher()
+{
+  local reg
+
+  if [ $1 -eq 0 ]; then
+       reg=UW_Q0_SUSPEND
+  else
+       reg=UW_Q1_SUSPEND
+  fi
+
+  axi $reg 0
+}
+
+
+load_userwave()
+{
+  local q=$1
+  local filename=$2
+  local binary=$3
+  local host_addr
+   
+
+  if [ ! -f $filename ]; then
+      echo "$filename not found!"
+      exit 1
+  fi
+
+  # If the user didn't give us the name of the compile userwave, use a default
+  test -z $binary && binary=/tmp/uw.bin.tmp
+
+  # Compile the userwave CSV to a binary file
+  uwcompile $filename -output $binary || exit 1
+
+  # How big is the resulting binary file? 
+  local file_len=$(stat -c %s $binary)
+
+  # How many userwave commands are in the binary file?
+  local userwave_length=$((file_len / 64))
+
+  # How large of a buffer should we map to hold the userwave?
+  local physram_length=$(((file_len + 0x10000) & 0xFFFF0000))
+
+  # Make sure the fetcher isn't running on this queue
+  if [ $q -eq 0 ]; then
+      axi UW_Q0_SUSPEND 1
+  else
+      axi UW_Q1_SUSPEND 1
+  fi
+  
+  # Get the address of the host-RAM buffer
+  if [ $q -eq 0 ]; then 
+    host_addr=$(get UW_Q0_HOST_ADDR)
+  else
+    host_addr=$(get UW_Q1_HOST_ADDR)
+  fi
+
+  if [ $host_addr -eq 0 ]; then
+    echo "host address should never be zero!"
+    exit 1
+  fi
+
+  # Load the binary file into the host-RAM buffer
+  physram $host_addr addr $physram_length -load $binary
+
+  # Tell the caller how long the userwave is
+  echo $userwave_length
+}
+
+
+#==============================================================================
+# Fetches the error state of an particular error
+# $1 = ERR_xxxx (one of the ERR bitmasks)
+#==============================================================================
+get_error_state()
+{
+  mask=$(($1))
+  error=$(($(get UW_ERRORS) & mask))
+  test $error -eq 0 && echo "0" || echo "1"
+}
+#==============================================================================

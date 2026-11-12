@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root MajorVersion="0" MinorVersion="43">
+  <CompositeFile CompositeFileTopName="top_level" CanBeSetAsTop="false" CanDisplayChildGraph="true">
+    <Description>Composite Fileset</Description>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1794441869"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1794441869"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1794441869"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1794441869"/>
+    <FileCollection Name="SOURCES" Type="SOURCES">
+      <File Name="synth/top_level.v" Type="Verilog">
+        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <ProcessingOrder Val="NORMAL"/>
+      </File>
+      <File Name="sim/top_level.v" Type="Verilog">
+        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SIMULATION"/>
+        <ProcessingOrder Val="NORMAL"/>
+      </File>
+      <File Name="top_level.bmj" Type="BMJ">
+        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="PRE_SYNTHESIS"/>
+        <UsedIn Val="PRE_SIMULATION"/>
+        <ProcessingOrder Val="NORMAL"/>
+      </File>
+      <File Name="top_level_bmstub.v" Type="Verilog">
+        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="PRE_SYNTHESIS"/>
+        <UsedIn Val="PRE_SIMULATION"/>
+        <ProcessingOrder Val="NORMAL"/>
+      </File>
+      <File Name="top_level_ooc.xdc" Type="XDC">
+        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="OUT_OF_CONTEXT"/>
+        <ProcessingOrder Val="NORMAL"/>
+      </File>
+    </FileCollection>
+    <BlockContainerCollection>
+      <BlockContainer InstPath="/uw_engine" IsPR="false" State="Validated">
+        <ActiveVariantSynth FileName="bd/userwave_inst_0/userwave_inst_0.bd"/>
+        <ActiveVariantSim FileName="bd/userwave_inst_0/userwave_inst_0.bd"/>
+        <VariantsCollection>
+          <BDFile BDFilePath="bd/userwave_inst_0/userwave_inst_0.bd" BDFileset="userwave_inst_0" BDSourceFile="../../../../../bdc/sources_1/bd/userwave/userwave.bd" BDSourceFileset="sources_1" BDVariantType="ALL"/>
+        </VariantsCollection>
+      </BlockContainer>
+    </BlockContainerCollection>
+    <ReferenceCollection>
+      <ModuleReference TargetName="userwave" Type="Block Design" SubInstancePath="top_level_userwave_0">
+        <TopFile Name="../../../../../bdc/sources_1/bd/userwave/userwave.bd"/>
+        <FileCollection>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_delay.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_fetcher.v"/>
+          <File Name="../../../../src/common/axi4_lite_slave.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_ctl.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_decode_uwc.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_dual_ltc2656.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_encode_uwc.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_engine.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_extra_flops.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_pulse.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/userwave.bd"/>
+        </FileCollection>
+      </ModuleReference>
+    </ReferenceCollection>
+  </CompositeFile>
+</Root>
