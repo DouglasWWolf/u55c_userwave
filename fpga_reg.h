@@ -83,8 +83,10 @@
 // Register:    UW_DAC_VALUE
 // Size:        32-bits
 // Type:        Read/Write
-// Description: Read:  Returns the DAC value of the channel specified by UW_DAC_CHANNEL
-//              Write: Writes a new values to the channel specified by UW_DAC_CHANNEL
+// Description: - Read:  Returns the DAC value of the channel specified by UW_DAC_CHANNEL
+//              - Write: Writes a new values to the channel specified by UW_DAC_CHANNEL.
+//              -        When writing a value to a DAC channel, the corresponding bit in
+//              -        UW_DAC_MASK is automatically set to 1.
 //
 #define UW_DAC_VALUE                                                 0x0000000000001010ULL
 
@@ -93,9 +95,19 @@
 // Register:    UW_DAC_MASK
 // Size:        32-bits
 // Type:        Read/Write
-// Description: A 1 bit means the corresponding DAC channel is manually controlled
+// Description: A 1 in any bit means the corresponding DAC channel is manually controlled.
 //
 #define UW_DAC_MASK                                                  0x0000000000001014ULL
+
+
+//
+// Register:    UW_ENABLE_NCAP
+// Size:        32-bits
+// Type:        Read/Write
+// Description: 1 = enable  the sensor-chip NCAP capacitor
+//              0 = disable the sensor-chip NCAP capacitor
+//
+#define UW_ENABLE_NCAP                                               0x0000000000001018ULL
 
 
 //

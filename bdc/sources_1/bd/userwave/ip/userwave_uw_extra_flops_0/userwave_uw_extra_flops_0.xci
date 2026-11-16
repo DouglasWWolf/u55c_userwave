@@ -66,6 +66,8 @@
         "pin_pre256": [ { "direction": "out" } ],
         "pin_rs0": [ { "direction": "out" } ],
         "pin_rs256": [ { "direction": "out" } ],
+        "pin_aux_rs0": [ { "direction": "out" } ],
+        "pin_aux_rs256": [ { "direction": "out" } ],
         "pin_spi_csld": [ { "direction": "out" } ],
         "pin_spi_sck": [ { "direction": "out" } ],
         "pin_spi_mosi0": [ { "direction": "out" } ],

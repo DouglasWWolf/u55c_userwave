@@ -66,6 +66,8 @@
           <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_engine.v"/>
           <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_extra_flops.v"/>
           <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_pulse.v"/>
+          <File Name="../../../../src/common/axis_slice.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_md_cdc.v"/>
           <File Name="../../../../../bdc/sources_1/bd/userwave/userwave.bd"/>
         </FileCollection>
       </ModuleReference>

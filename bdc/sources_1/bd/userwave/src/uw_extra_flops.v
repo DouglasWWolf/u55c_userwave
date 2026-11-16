@@ -45,6 +45,8 @@ module uw_extra_flops # (parameter EXTRA_FLOPS = 2)
     output       pin_pre256,
     output       pin_rs0,
     output       pin_rs256,
+    output       pin_aux_rs0,
+    output       pin_aux_rs256,
     output       pin_spi_csld,
     output       pin_spi_sck,
     output       pin_spi_mosi0,
@@ -53,7 +55,7 @@ module uw_extra_flops # (parameter EXTRA_FLOPS = 2)
 genvar i;
 
 // This is the number of input signal bits we have
-localparam SIGNAL_COUNT = 14;
+localparam SIGNAL_COUNT = 16;
 
 // This is the last index in the chain
 localparam LAST_INDEX = EXTRA_FLOPS - 1;
@@ -74,6 +76,8 @@ wire[SIGNAL_COUNT-1:0] input_word =
     glb_pre_sw,
     pre0,
     pre256,
+    rs0,
+    rs256,
     rs0,
     rs256,
     spi_csld,
@@ -99,6 +103,8 @@ assign
     pin_pre256,
     pin_rs0,
     pin_rs256,
+    pin_aux_rs0,
+    pin_aux_rs256,
     pin_spi_csld,
     pin_spi_sck,
     pin_spi_mosi0,

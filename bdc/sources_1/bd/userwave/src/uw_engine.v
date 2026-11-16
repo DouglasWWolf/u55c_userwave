@@ -77,7 +77,7 @@ module uw_engine
 
     // When this is asserted, it is safe for other modules to update SMEM on
     // the sensor-hip
-    output smem_access_enable,
+    output reg smem_access_enable,
 
     //=========================================================================
     // This the SPI bus to a pair of LTC-2656 DACs
@@ -444,6 +444,22 @@ always @(posedge clk) begin
     endcase
 end
 //=============================================================================
+ 
+//=============================================================================
+// Don't allow other parts of the system to write to SMEM if we're in the middle
+// of a read operation.   Writing to SMEM creates noise that corrupts the
+// sensor chip's ability to cleanly read ADC values.
+//
+// We buffer this through smem_access_enable_pre[] to ease timing closure
+//=============================================================================
+(* dont_touch = "true" *) reg[1:0] smem_access_enable_pre;
+//-----------------------------------------------------------------------------
+always @(posedge clk) begin
+    smem_access_enable        <= smem_access_enable_pre[1];
+    smem_access_enable_pre[1] <= smem_access_enable_pre[0];
+    smem_access_enable_pre[0] <= (smem_access_counter == 0);
+end
+//=============================================================================
 
 
 //=============================================================================
@@ -472,8 +488,10 @@ always @(posedge clk) begin
 
     // This counts down ticks.  When it's zero, it is safe for
     // other modules to update sensor-chip SMEM
-    if (smem_access_counter && row_pulse_rising)
+    if (smem_access_counter && row_pulse_rising) begin
         smem_access_counter <= smem_access_counter - 1;
+    end
+        
 
     if (resetn == 0) begin
         fsm_state           <= FSM_NEXT_UWC;
@@ -661,11 +679,6 @@ end
 
 // We're read to accept a new UWC only when we're not halted
 assign axis_in_tready = (fsm_state == FSM_NEXT_UWC && !halted);
-
-// When the counter is zero, it's safe for other modules to access sensor-chip
-// SMEM.  We prevent other modules from writing to SMEM during a chip-read
-// because it introduces noise into the sensor-chip's internal ADC sampling.
-assign smem_access_enable = (smem_access_counter == 0);
 
 //=============================================================================
 

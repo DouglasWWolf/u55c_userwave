@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "userwave_inst_0_uw_pulse_0",
-    "cell_name": "uw_pulse",
+    "cell_name": "uw_engine/uw_pulse",
     "component_reference": "xilinx.com:module_ref:uw_pulse:1.0",
     "ip_revision": "1",
     "gen_directory": ".",

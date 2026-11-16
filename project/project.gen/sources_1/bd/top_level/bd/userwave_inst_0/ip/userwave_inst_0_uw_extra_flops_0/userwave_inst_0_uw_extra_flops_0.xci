@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "userwave_inst_0_uw_extra_flops_0",
-    "cell_name": "uw_extra_flops",
+    "cell_name": "uw_engine/uw_extra_flops",
     "component_reference": "xilinx.com:module_ref:uw_extra_flops:1.0",
     "ip_revision": "1",
     "gen_directory": ".",
@@ -66,6 +66,8 @@
         "pin_pre256": [ { "direction": "out" } ],
         "pin_rs0": [ { "direction": "out" } ],
         "pin_rs256": [ { "direction": "out" } ],
+        "pin_aux_rs0": [ { "direction": "out" } ],
+        "pin_aux_rs256": [ { "direction": "out" } ],
         "pin_spi_csld": [ { "direction": "out" } ],
         "pin_spi_sck": [ { "direction": "out" } ],
         "pin_spi_mosi0": [ { "direction": "out" } ],

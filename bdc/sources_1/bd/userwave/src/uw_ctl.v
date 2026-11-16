@@ -44,6 +44,9 @@ module uw_ctl # (parameter AW=8)
     output reg       dac_write_stb,
     output reg[15:0] dac_mask,
 
+    // A '1' here disconnects the sensor-chips NCAP capacitor
+    output disable_ncap,
+
     // When this is asserted, the userwave engine is halted
     input uw_halted,
 
@@ -171,6 +174,12 @@ localparam REG_DAC_VALUE = 4;
     @register A 1 in any bit means the corresponding DAC channel is manually controlled.
 */
 localparam REG_DAC_MASK = 5;
+
+/*
+    @register 1 = enable  the sensor-chip NCAP capacitor
+    @rdesc    0 = disable the sensor-chip NCAP capacitor
+*/
+localparam REG_ENABLE_NCAP = 6;
 
 /*
     @register Suspend userwave input queue 0, holding it in reset
@@ -301,6 +310,10 @@ localparam OKAY   = 0;
 localparam SLVERR = 2;
 localparam DECERR = 3;
 
+// A '1' in "enable_encap" writes a 0 to "disable_ncap"
+reg enable_ncap;
+assign disable_ncap = !enable_ncap;
+
 reg[31:0] userwave_errors;
 
 // The high 32-bits of "uwc_provided"
@@ -329,6 +342,7 @@ always @(posedge clk) begin
         userwave_errors     <= 0;
         ctl_command         <= 0;
         dac_mask            <= 0;
+        enable_ncap         <= 0;
     end
 
     // Otherwise, we're not in reset...
@@ -351,6 +365,7 @@ always @(posedge clk) begin
                                                  dac_mask      <= dac_mask | (1 << dac_channel);
                                             end 
                    
+                    REG_ENABLE_NCAP:        enable_ncap     <= ashi_wdata;
                     REG_ERRORS:             userwave_errors <= userwave_errors & ~ashi_wdata;
 
                     REG_Q0_SUSPEND:                         q0_suspend             <= ashi_wdata[0];
@@ -420,6 +435,8 @@ always @(posedge clk) begin
                                                     q_select,
                                                     uw_halted
                                                   };
+            
+            REG_ENABLE_NCAP:        ashi_rdata <= enable_ncap;
 
             REG_DAC_CHANNEL:        ashi_rdata <= dac_channel;
             REG_DAC_VALUE:          ashi_rdata <= dac_value_rd;

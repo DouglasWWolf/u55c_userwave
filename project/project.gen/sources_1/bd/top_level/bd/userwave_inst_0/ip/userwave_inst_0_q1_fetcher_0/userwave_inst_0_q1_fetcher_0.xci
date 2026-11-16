@@ -2,7 +2,7 @@
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
     "xci_name": "userwave_inst_0_q1_fetcher_0",
-    "cell_name": "q1_fetcher",
+    "cell_name": "uw_engine/q1_fetcher",
     "component_reference": "xilinx.com:module_ref:uw_fetcher:1.0",
     "ip_revision": "1",
     "gen_directory": ".",
