@@ -79,6 +79,9 @@ module uw_engine
     // the sensor-hip
     output reg smem_access_enable,
 
+    // The is the meta-data timestamp.  Always 0 when the engine is halted.
+    output reg[63:0] md_timestamp,
+
     //=========================================================================
     // This the SPI bus to a pair of LTC-2656 DACs
     //=========================================================================
@@ -406,7 +409,6 @@ reg next_glb_pre_sw;
 // This simple state-machine emits two data-cycles of metadata on the
 // "md_out" stream any time "emit_md_stb" is strobed.
 //=============================================================================
-reg[63:0] md_timestamp;
 reg       emit_md_stb;
 reg       mdsm_state;
 //-----------------------------------------------------------------------------

@@ -111,6 +111,15 @@
 
 
 //
+// Register:    UW_TIMESTAMP
+// Size:        64-bits
+// Type:        Read only
+// Description: The metadata timestamp.  Always 0 when the engine is halted.
+//
+#define UW_TIMESTAMP                                                 0x400000000000101cULL
+
+
+//
 // Register:    UW_Q0_SUSPEND
 // Size:        32-bits
 // Type:        Read/Write

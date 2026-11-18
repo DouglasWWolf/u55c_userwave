@@ -44,7 +44,7 @@
       </File>
     </FileCollection>
     <BlockContainerCollection>
-      <BlockContainer InstPath="/uw_engine" IsPR="false" State="Validated">
+      <BlockContainer InstPath="/uw_engine" IsPR="false" State="Stale">
         <ActiveVariantSynth FileName="bd/userwave_inst_0/userwave_inst_0.bd"/>
         <ActiveVariantSim FileName="bd/userwave_inst_0/userwave_inst_0.bd"/>
         <VariantsCollection>

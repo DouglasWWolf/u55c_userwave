@@ -69,6 +69,7 @@
         "q1_alignment_stb": [ { "direction": "in" } ],
         "uw_md_stall_stb": [ { "direction": "in" } ],
         "pa_sync_alive": [ { "direction": "in" } ],
+        "md_timestamp": [ { "direction": "in", "size_left": "63", "size_right": "0" } ],
         "S_AXI_AWADDR": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
         "S_AXI_AWVALID": [ { "direction": "in", "driver_value": "0" } ],
         "S_AXI_AWPROT": [ { "direction": "in", "size_left": "2", "size_right": "0", "driver_value": "0" } ],

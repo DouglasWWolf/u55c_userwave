@@ -74,6 +74,8 @@ module uw_ctl # (parameter AW=8)
     // This is asserted if the pa_sync pulse from the chip is alive and well
     input pa_sync_alive,
 
+    // The metadata timestamp.  Always 0 when the engine is halted.
+    input[63:0] md_timestamp,
 
     //================== This is an AXI4-Lite slave interface ==================
         
@@ -180,6 +182,15 @@ localparam REG_DAC_MASK = 5;
     @rdesc    0 = disable the sensor-chip NCAP capacitor
 */
 localparam REG_ENABLE_NCAP = 6;
+
+/*
+    @register The metadata timestamp.  Always 0 when the engine is halted.
+    @rsize 64
+    @rname REG_TIMESTAMP
+    @rtype ro
+*/
+localparam REG_TIMESTAMP_H = 7;
+localparam REG_TIMESTAMP_L = 8;
 
 /*
     @register Suspend userwave input queue 0, holding it in reset
@@ -319,6 +330,9 @@ reg[31:0] userwave_errors;
 // The high 32-bits of "uwc_provided"
 reg[31:0] q0_uwc_provided_h, q1_uwc_provided_h;
 
+// The lower 32-bits of the most recently read md_timestamp.
+reg[31:0] md_timestamp_l;
+
 //==========================================================================
 // This state machine handles AXI4-Lite write requests
 //==========================================================================
@@ -457,6 +471,12 @@ always @(posedge clk) begin
             REG_Q1_UWC_PROVIDED_H:  ashi_rdata <= q1_uwc_provided[63:32];
             REG_Q1_UWC_PROVIDED_L:  ashi_rdata <= q1_uwc_provided[31:00];
             REG_Q1_UWC_HOST_FREE:   ashi_rdata <= q1_uwc_host_free;
+
+            REG_TIMESTAMP_H:        begin
+                                        ashi_rdata     <= md_timestamp[63:32];
+                                        md_timestamp_l <= md_timestamp[31:0];
+                                    end
+            REG_TIMESTAMP_L:        ashi_rdata <= md_timestamp_l;
 
             // Reads of any other register are a decode-error
             default: ashi_rresp <= DECERR;
