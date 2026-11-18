@@ -54,8 +54,8 @@ preplace netloc xdma_0_pcie_mgt 1 0 1 NJ 80
 levelinfo -pg 1 0 160 460 780 1060 1180
 pagesize -pg 1 -db -bbox -sgen -140 0 1350 750
 ",
-   "No Loops_ScaleFactor":"0.870968",
-   "No Loops_TopLeft":"-232,-146",
+   "No Loops_ScaleFactor":"0.83109",
+   "No Loops_TopLeft":"-136,-102",
    "commentid":"",
    "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
 #  -string -flagsOSRD
