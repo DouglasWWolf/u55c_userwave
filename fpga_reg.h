@@ -219,5 +219,59 @@
 #define UW_Q1_UWC_HOST_FREE                                          0x0000000000001098ULL
 
 
+//
+// Register:    UW_LIQI_MAX_SAMPLES
+// Size:        32-bits
+// Type:        Read/Write
+// Description: The maximum number of ADC samples to take during a LIQI capture
+//
+#define UW_LIQI_MAX_SAMPLES                                          0x00000000000010c0ULL
+
+
+//
+// Register:    UW_LIQI_SAMPLE_PERIOD
+// Size:        32-bits
+// Type:        Read/Write
+// Description: the LIQI sampling period, in microseconds
+//
+#define UW_LIQI_SAMPLE_PERIOD                                        0x00000000000010c4ULL
+
+
+//
+// Register:    UW_LIQI_ADC
+// Size:        32-bits
+// Type:        Read only
+// Description: The current value of the LIQI ADC
+//
+#define UW_LIQI_ADC                                                  0x00000000000010c8ULL
+
+
+//
+// Register:    UW_LIQI_FIFO
+// Size:        32-bits
+// Type:        Read only
+// Description: The LIQI FIFO.   Returns 0xFFFF if FIFO is empty
+//
+#define UW_LIQI_FIFO                                                 0x00000000000010ccULL
+
+
+//
+// Register:    UW_LIQI_FIFO_COUNT
+// Size:        32-bits
+// Type:        Read only
+// Description: The number of entries in the LIQI FIFO
+//
+#define UW_LIQI_FIFO_COUNT                                           0x00000000000010d0ULL
+
+
+//
+// Register:    UW_LIQI_FIFO_OVR
+// Size:        32-bits
+// Type:        W1C
+// Description: This is 1 if the LIQI FIFO has overflowed.
+//
+#define UW_LIQI_FIFO_OVR                                             0x00000000000010d4ULL
+
+
 
 #endif

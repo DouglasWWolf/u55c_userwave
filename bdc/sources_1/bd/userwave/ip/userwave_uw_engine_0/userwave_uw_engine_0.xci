@@ -66,6 +66,7 @@
         "rs256": [ { "direction": "out" } ],
         "smem_access_enable": [ { "direction": "out" } ],
         "md_timestamp": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
+        "liqi_capture_stb": [ { "direction": "out" } ],
         "spi_csld": [ { "direction": "out" } ],
         "spi_sck": [ { "direction": "out" } ],
         "spi_mosi0": [ { "direction": "out" } ],

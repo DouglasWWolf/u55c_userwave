@@ -82,6 +82,9 @@ module uw_engine
     // The is the meta-data timestamp.  Always 0 when the engine is halted.
     output reg[63:0] md_timestamp,
 
+    // When this strobes high, a capture of LIQI data begins
+    output reg liqi_capture_stb,
+
     //=========================================================================
     // This the SPI bus to a pair of LTC-2656 DACs
     //=========================================================================
@@ -259,6 +262,9 @@ wire[15:0]    uwc_vprebot_a;
 wire[15:0]    uwc_vpretop_sw_delay;
 wire[15:0]    uwc_vpretop_b;
 wire[15:0]    uwc_vpretop_a;
+wire[15:0]    uwc_nsa_cmd_index;
+wire[15:0]    uwc_liqi_capture_delay;
+wire          uwc_liqi_capture_en;
 wire[15:0]    uwc_read_data_type;
 wire[15:0]    uwc_read_characterization_id;
 wire[15:0]    uwc_read_start_time;
@@ -404,6 +410,7 @@ reg next_vprebot_sw;
 reg next_refp_sw;
 reg next_refn_sw;
 reg next_glb_pre_sw;
+reg next_liqi_capture_stb;
 
 //=============================================================================
 // This simple state-machine emits two data-cycles of metadata on the
@@ -455,6 +462,7 @@ end
 // We buffer this through smem_access_enable_pre[] to ease timing closure
 //=============================================================================
 (* dont_touch = "true" *) reg[1:0] smem_access_enable_pre;
+reg[8:0]  smem_access_counter;
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
     smem_access_enable        <= smem_access_enable_pre[1];
@@ -476,17 +484,17 @@ localparam FSM_NEXT_UWC       = 0;
 localparam FSM_SETUP_SWITCHES = 1;
 localparam FSM_WAIT_FOR_TICK  = 2;
 localparam FSM_WAIT_TICK_END  = 3;
-reg[8:0]   smem_access_counter;
 
 //-----------------------------------------------------------------------------
 always @(posedge clk) begin
 
     // These strobe high for a single cycle at a time
-    underflow_stb <= 0;
-    short_uwc_stb <= 0;
-    pgm_dacs_stb  <= 0;
-    row_tick_stb  <= 0;
-    emit_md_stb   <= 0;
+    underflow_stb    <= 0;
+    short_uwc_stb    <= 0;
+    pgm_dacs_stb     <= 0;
+    row_tick_stb     <= 0;
+    emit_md_stb      <= 0;
+    liqi_capture_stb <= 0;
 
     // This counts down ticks.  When it's zero, it is safe for
     // other modules to update sensor-chip SMEM
@@ -496,22 +504,23 @@ always @(posedge clk) begin
         
 
     if (resetn == 0) begin
-        fsm_state           <= FSM_NEXT_UWC;
-        pre0                <= 0;
-        pre256              <= 0;
-        rs0                 <= 0;
-        rs256               <= 0;
-        next_liq_sw         <= 0;   
-        next_vpretop_sw     <= 0;   
-        next_vprebot_sw     <= 0;   
-        next_refp_sw        <= 0; 
-        next_refn_sw        <= 0; 
-        next_glb_pre_sw     <= 0;  
-        smem_access_counter <= 0;
-        halted              <= 1;
-        q_select            <= 0;
-        uwc[0]              <= uwc_nop;
-        uwc[1]              <= uwc_nop;
+        fsm_state             <= FSM_NEXT_UWC;
+        pre0                  <= 0;
+        pre256                <= 0;
+        rs0                   <= 0;
+        rs256                 <= 0;
+        next_liq_sw           <= 0;
+        next_vpretop_sw       <= 0;
+        next_vprebot_sw       <= 0;
+        next_refp_sw          <= 0;
+        next_refn_sw          <= 0;
+        next_glb_pre_sw       <= 0;
+        next_liqi_capture_stb <= 0;
+        smem_access_counter   <= 0;
+        halted                <= 1;
+        q_select              <= 0;
+        uwc[0]                <= uwc_nop;
+        uwc[1]                <= uwc_nop;
     end
 
     else case(fsm_state)
@@ -554,6 +563,11 @@ always @(posedge clk) begin
                 //-------------------------------------------------------------
                 // Do we need to change any switch settings at the next tick?
                 //-------------------------------------------------------------
+                if (uwc_liqi_capture_delay == tick_count)
+                    next_liqi_capture_stb <= uwc_liqi_capture_en;
+                else
+                    next_liqi_capture_stb <= 0;
+
                 if (uwc_liq_sw_delay == tick_count)
                     next_liq_sw <= uwc_liq_sw;
 
@@ -612,15 +626,16 @@ always @(posedge clk) begin
         // to their new output values
         FSM_WAIT_FOR_TICK:
             if (row_pulse_rising) begin
-                row_tick_stb <= (uwc_read_generated_flag == 0);
-                pgm_dacs_stb <= (tick_count == 0);
-                liq_sw       <= next_liq_sw    ;   
-                vpretop_sw   <= next_vpretop_sw;   
-                vprebot_sw   <= next_vprebot_sw;   
-                refp_sw      <= next_refp_sw   ; 
-                refn_sw      <= next_refn_sw   ; 
-                glb_pre_sw   <= next_glb_pre_sw;  
-                fsm_state    <= FSM_WAIT_TICK_END;
+                row_tick_stb     <= (uwc_read_generated_flag == 0);
+                pgm_dacs_stb     <= (tick_count == 0);
+                liq_sw           <= next_liq_sw;
+                vpretop_sw       <= next_vpretop_sw;
+                vprebot_sw       <= next_vprebot_sw;
+                refp_sw          <= next_refp_sw;
+                refn_sw          <= next_refn_sw;
+                glb_pre_sw       <= next_glb_pre_sw;
+                liqi_capture_stb <= next_liqi_capture_stb;
+                fsm_state        <= FSM_WAIT_TICK_END;
             end
 
         // Wait until the row_pulse tells us that it's safe to proceed to
@@ -739,6 +754,9 @@ uw_decode_uwc decode_uwc0
     .vpretop_sw_delay         (             ),
     .vpretop_b                (uwc_vpretop_b),
     .vpretop_a                (uwc_vpretop_a),
+    .nsa_cmd_index            (             ),
+    .liqi_capture_delay       (             ),
+    .liqi_capture_en          (             ),
     .read_data_type           (             ),
     .read_characterization_id (             ),
     .read_start_time          (             ),
@@ -785,6 +803,9 @@ uw_decode_uwc decode_uwc1
     .vpretop_sw_delay         (uwc_vpretop_sw_delay        ),
     .vpretop_b                (                            ),
     .vpretop_a                (                            ),
+    .nsa_cmd_index            (uwc_nsa_cmd_index           ),
+    .liqi_capture_delay       (uwc_liqi_capture_delay      ),
+    .liqi_capture_en          (uwc_liqi_capture_en         ),
     .read_data_type           (uwc_read_data_type          ),
     .read_characterization_id (uwc_read_characterization_id),
     .read_start_time          (uwc_read_start_time         ),
@@ -837,6 +858,9 @@ uw_encode_uwc i_nop
     .vpretop_sw_delay         (0                   ),
     .vpretop_b                (uwc_vpretop_b       ),
     .vpretop_a                (uwc_vpretop_a       ),
+    .nsa_cmd_index            (0                   ),
+    .liqi_capture_delay       (0                   ),
+    .liqi_capture_en          (0                   ),
     .read_data_type           (0                   ),
     .read_characterization_id (0                   ),
     .read_start_time          (0                   ),

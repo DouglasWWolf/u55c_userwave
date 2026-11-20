@@ -49,6 +49,9 @@ module uw_decode_uwc
     output[15:0]    vpretop_b,
     output[15:0]    vpretop_a,
 
+    output[15:0]    nsa_cmd_index,
+    output[15:0]    liqi_capture_delay,
+    output          liqi_capture_en,
     output[15:0]    read_data_type,
     output[15:0]    read_characterization_id,
     output[15:0]    read_start_time,
@@ -65,11 +68,10 @@ module uw_decode_uwc
 
 wire[ 7:0] analog_reserved1;
 wire[ 2:0] analog_reserved0;
-wire[31:0] reserved1;
-wire[15:0] reserved0;
 wire[ 7:0] read_reserved1;
 wire[ 2:0] read_reserved0;
-
+wire[ 6:0] liqi_reserved0;
+wire[ 7:0] liqi_reserved1;
 assign
 {
     glb_pre_start,
@@ -100,8 +102,11 @@ assign
     vpretop_sw_delay,
     vpretop_b,
     vpretop_a,
-    reserved1,
-    reserved0,
+    nsa_cmd_index,
+    liqi_capture_delay,
+    liqi_reserved1,
+    liqi_reserved0,
+    liqi_capture_en,
     read_data_type,
     read_characterization_id,
     read_start_time,

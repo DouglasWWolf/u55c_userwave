@@ -71,11 +71,11 @@ i_slice
     .m_axis_tdata (slice_tdata ),
     .m_axis_tvalid(slice_tvalid),
     .m_axis_tready(slice_tready),
-    .m_axis_tkeep (0),
-    .m_axis_tlast (0),
-    .m_axis_tuser (0),
-    .m_axis_tid   (0),
-    .m_axis_tdest (0)
+    .m_axis_tkeep (),
+    .m_axis_tlast (),
+    .m_axis_tuser (),
+    .m_axis_tid   (),
+    .m_axis_tdest ()
 );
 //=============================================================================
 

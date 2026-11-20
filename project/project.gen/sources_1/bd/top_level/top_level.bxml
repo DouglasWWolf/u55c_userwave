@@ -2,47 +2,11 @@
 <Root MajorVersion="0" MinorVersion="43">
   <CompositeFile CompositeFileTopName="top_level" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1794441869"/>
-    <Generation Name="SIMULATION" State="STALE" Timestamp="1794441869"/>
-    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1794441869"/>
-    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1794441869"/>
-    <FileCollection Name="SOURCES" Type="SOURCES">
-      <File Name="synth/top_level.v" Type="Verilog">
-        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
-        <ProcessingOrder Val="NORMAL"/>
-      </File>
-      <File Name="sim/top_level.v" Type="Verilog">
-        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SIMULATION"/>
-        <ProcessingOrder Val="NORMAL"/>
-      </File>
-      <File Name="top_level.bmj" Type="BMJ">
-        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="PRE_SYNTHESIS"/>
-        <UsedIn Val="PRE_SIMULATION"/>
-        <ProcessingOrder Val="NORMAL"/>
-      </File>
-      <File Name="top_level_bmstub.v" Type="Verilog">
-        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="PRE_SYNTHESIS"/>
-        <UsedIn Val="PRE_SIMULATION"/>
-        <ProcessingOrder Val="NORMAL"/>
-      </File>
-      <File Name="top_level_ooc.xdc" Type="XDC">
-        <Properties IsEditable="false" IsVisible="true" IsNetlistSimulation="false" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="OUT_OF_CONTEXT"/>
-        <ProcessingOrder Val="NORMAL"/>
-      </File>
-    </FileCollection>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1795130004"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1795130004"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1795130004"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1795130004"/>
+    <FileCollection Name="SOURCES" Type="SOURCES"/>
     <BlockContainerCollection>
       <BlockContainer InstPath="/uw_engine" IsPR="false" State="Stale">
         <ActiveVariantSynth FileName="bd/userwave_inst_0/userwave_inst_0.bd"/>
@@ -68,6 +32,8 @@
           <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_pulse.v"/>
           <File Name="../../../../src/common/axis_slice.v"/>
           <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_md_cdc.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_liqi_capture.v"/>
+          <File Name="../../../../../bdc/sources_1/bd/userwave/src/uw_ltc2365.v"/>
           <File Name="../../../../../bdc/sources_1/bd/userwave/userwave.bd"/>
         </FileCollection>
       </ModuleReference>

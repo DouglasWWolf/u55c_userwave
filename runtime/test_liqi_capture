@@ -1,0 +1,87 @@
+
+#==============================================================================
+# This tests the LIQI ADC sampling mechanism
+#==============================================================================
+source api
+test_name="test_liqi_capture"
+userwave=/tmp/uw.csv.tmp
+
+# Build our first userwave, with liq_a set to 0x1111
+cat << EOF >$userwave
+    cmd_index:0,  cmd_duration : 4
+    cmd_index:42, cmd_duration: 100000, liqi_capture_en : 1, liqi_capture_delay : 0
+EOF
+
+
+# Initialize everything to a known state
+init
+
+# During LIQI capture, we want to capture 10 samples with
+# a sampling period of 2 microseconds (i.e., 500 KHz)
+axi UW_LIQI_MAX_SAMPLES  207
+axi UW_LIQI_SAMPLE_PERIOD 2
+
+# Start the userwave running on queue 0
+userwave_length=$(load_userwave 0 $userwave)
+provide       0 $userwave_length
+start_fetcher 0
+ctl safe_run  0
+sleep .25
+
+# The "queue 0 is active" status bit should be set
+status=$(get UW_STATUS)
+expected=$((STAT_Q0_ACTIVE | STAT_Q0_SELECTED))
+if [ $status != $expected ]; then
+    fatal "(1) UW_STATUS should be 0x%04X not 0x%04X" $expected $status
+fi
+
+# Wait for the userwave to end
+done=$(wait_underflow 20)
+test $done -ne 1 && fatal "userwave didn't end!"
+
+# Check the errors
+errors=$(get UW_ERRORS)
+expected=$ERR_UNDERFLOW
+if [ $errors != $expected ]; then
+    fatal "(2) UW_ERRORS should be 0x%04X not 0x%04X" $expected $errors
+fi
+ctl safe_halt
+
+
+# Make sure we saw the correct number of samples
+expected_samples=$(get UW_LIQI_MAX_SAMPLES)
+  actual_samples=$(get UW_LIQI_FIFO_COUNT)
+if [ $expected_samples -ne $actual_samples ]; then
+    fatal "(3) UW_LIQI_FIFO_COUNT should be %u not %u" $expected_samples $actual_samples
+fi
+
+# Make sure the returned samples are correct
+expected_sample=
+i=0
+while [ $i -lt $actual_samples ]; do
+    sample=$(get UW_LIQI_FIFO)
+    if [ -z $expected_sample ]; then
+        expected_sample=$(( (sample + 1) & 0xFFF))
+    elif [ $sample -ne $expected_sample ]; then
+        fatal "(4) UW_LIQI_FIFO should be %u not %u" $expected_sample $sample
+    fi
+    expected_sample=$(( (sample + 1) & 0xFFF))
+    i=$((i+1))
+done
+
+
+# Make sure the count of entries in the FIFO is zero
+count=$(get UW_LIQI_FIFO_COUNT)
+if [ $count -ne 0 ]; then
+    fatal "(5) UW_LIQI_FIFO_COUNT should be 0 not %u" $count
+fi
+
+# Make sure that a read of the FIFO returns 0xFFFF
+sample=$(get UW_LIQI_FIFO)
+if [ $sample -ne $((0xFFFF)) ]; then
+    fatal "(6) UW_LIQI_FIFO should be 0xFFFF not 0x%4X" $sample
+fi
+
+# If we get here, all is well!
+pass
+exit 0

@@ -28,7 +28,8 @@
         "uw_recorder_ctl": "",
         "system_ila_0": ""
       },
-      "uw_engine": ""
+      "uw_engine": "",
+      "sim_ltc2365": ""
     },
     "interface_ports": {
       "pcie0_refclk": {
@@ -1557,14 +1558,6 @@
                   "ASSOCIATED_RESET": {
                     "value": "resetn",
                     "value_src": "constant"
-                  },
-                  "FREQ_HZ": {
-                    "value": "250000000",
-                    "value_src": "user_prop"
-                  },
-                  "CLK_DOMAIN": {
-                    "value": "top_level_xdma_0_0_axi_aclk",
-                    "value_src": "default_prop"
                   }
                 }
               },
@@ -1616,14 +1609,6 @@
                   "ASSOCIATED_RESET": {
                     "value": "resetn",
                     "value_src": "constant"
-                  },
-                  "FREQ_HZ": {
-                    "value": "250000000",
-                    "value_src": "user_prop"
-                  },
-                  "CLK_DOMAIN": {
-                    "value": "top_level_xdma_0_0_axi_aclk",
-                    "value_src": "default_prop"
                   }
                 }
               },
@@ -3253,6 +3238,21 @@
           "mc_clk": {
             "type": "clk",
             "direction": "I"
+          },
+          "pin_aux_rs0": {
+            "direction": "O"
+          },
+          "pin_aux_rs256": {
+            "direction": "O"
+          },
+          "liqi_sck": {
+            "direction": "O"
+          },
+          "liqi_csn": {
+            "direction": "O"
+          },
+          "liqi_sdo": {
+            "direction": "I"
           }
         },
         "post_compiled_compname": "userwave_inst_0",
@@ -3260,12 +3260,39 @@
         "variant_info": {
           "userwave.bd": {
             "scoped_diagram": "userwave_inst_0.bd",
-            "design_checksum": "0xE641A869F6FF8A32",
+            "design_checksum": "0xCD806653D8FD3F18",
             "ref_name": "userwave",
             "ref_subinst_path": "top_level_userwave_0",
             "ref_type": "Block Design",
             "source_type": "all",
             "active": "all"
+          }
+        }
+      },
+      "sim_ltc2365": {
+        "vlnv": "xilinx.com:module_ref:uw_sim_ltc2365:1.0",
+        "ip_revision": "1",
+        "xci_name": "top_level_uw_sim_ltc2365_0_0",
+        "xci_path": "ip/top_level_uw_sim_ltc2365_0_0/top_level_uw_sim_ltc2365_0_0.xci",
+        "inst_hier_path": "sim_ltc2365",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "uw_sim_ltc2365",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I"
+          },
+          "sck": {
+            "direction": "I"
+          },
+          "csn": {
+            "direction": "I"
+          },
+          "sdo": {
+            "direction": "O"
           }
         }
       }
@@ -3364,7 +3391,8 @@
           "tick_src/clk",
           "uw_recorder/clk",
           "uw_engine/clk",
-          "uw_engine/mc_clk"
+          "uw_engine/mc_clk",
+          "sim_ltc2365/clk"
         ]
       },
       "source_200Mhz_resetn": {
@@ -3391,6 +3419,18 @@
         "ports": [
           "uw_engine/row_tick_stb",
           "uw_recorder/row_tick_stb"
+        ]
+      },
+      "uw_engine_liqi_csn": {
+        "ports": [
+          "uw_engine/liqi_csn",
+          "sim_ltc2365/csn"
+        ]
+      },
+      "uw_engine_liqi_sck": {
+        "ports": [
+          "uw_engine/liqi_sck",
+          "sim_ltc2365/sck"
         ]
       },
       "uw_engine_pre0": {
@@ -3439,6 +3479,12 @@
         "ports": [
           "uw_engine/spi_sck",
           "uw_recorder/spi_sck"
+        ]
+      },
+      "uw_sim_ltc2365_sdo": {
+        "ports": [
+          "sim_ltc2365/sdo",
+          "uw_engine/liqi_sdo"
         ]
       },
       "vprebot_sw_1": {

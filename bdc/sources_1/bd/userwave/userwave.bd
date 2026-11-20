@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xF6FF8A3268DCB3CA",
+      "boundary_crc": "0xD8FD3F1839C95EB8",
       "device": "xcu55c-fsvh2892-2L-e",
       "gen_directory": "../../../../project.gen/sources_1/bd/userwave",
       "name": "userwave",
@@ -17,7 +17,11 @@
       "uw_engine": "",
       "uw_extra_flops": "",
       "uw_pulse": "",
-      "uw_md_cdc": ""
+      "uw_md_cdc": "",
+      "liqi_capture": {
+        "uw_liqi_capture": "",
+        "uw_ltc2365": ""
+      }
     },
     "interface_ports": {
       "Q0_PCI": {
@@ -1072,6 +1076,21 @@
             "value_src": "default"
           }
         }
+      },
+      "pin_aux_rs0": {
+        "direction": "O"
+      },
+      "pin_aux_rs256": {
+        "direction": "O"
+      },
+      "liqi_sck": {
+        "direction": "O"
+      },
+      "liqi_csn": {
+        "direction": "O"
+      },
+      "liqi_sdo": {
+        "direction": "I"
       }
     },
     "components": {
@@ -1973,6 +1992,69 @@
           "boundary_crc": "0x0"
         },
         "interface_ports": {
+          "liqi_fifo": {
+            "mode": "Slave",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+            "parameters": {
+              "TDATA_NUM_BYTES": {
+                "value": "2",
+                "value_src": "constant"
+              },
+              "TDEST_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TID_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TUSER_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TREADY": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "HAS_TSTRB": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TKEEP": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TLAST": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "user_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "top_level_xdma_0_0_axi_aclk",
+                "value_src": "user_prop"
+              }
+            },
+            "port_maps": {
+              "TDATA": {
+                "physical_name": "liqi_fifo_tdata",
+                "direction": "I",
+                "left": "15",
+                "right": "0"
+              },
+              "TVALID": {
+                "physical_name": "liqi_fifo_tvalid",
+                "direction": "I"
+              },
+              "TREADY": {
+                "physical_name": "liqi_fifo_tready",
+                "direction": "O"
+              }
+            }
+          },
           "S_AXI": {
             "mode": "Slave",
             "vlnv_bus_definition": "xilinx.com:interface:aximm:1.0",
@@ -2200,7 +2282,7 @@
             "direction": "I",
             "parameters": {
               "ASSOCIATED_BUSIF": {
-                "value": "S_AXI",
+                "value": "liqi_fifo:S_AXI",
                 "value_src": "constant"
               },
               "ASSOCIATED_RESET": {
@@ -2338,6 +2420,32 @@
             "direction": "I",
             "left": "63",
             "right": "0"
+          },
+          "liqi_max_samples": {
+            "direction": "O",
+            "left": "31",
+            "right": "0"
+          },
+          "liqi_clear_ovr_stb": {
+            "direction": "O"
+          },
+          "liqi_sample_period": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          },
+          "liqi_adc": {
+            "direction": "I",
+            "left": "11",
+            "right": "0"
+          },
+          "liqi_fifo_count": {
+            "direction": "I",
+            "left": "31",
+            "right": "0"
+          },
+          "liqi_fifo_ovr": {
+            "direction": "I"
           }
         }
       },
@@ -2673,6 +2781,9 @@
             "direction": "O",
             "left": "63",
             "right": "0"
+          },
+          "liqi_capture_stb": {
+            "direction": "O"
           },
           "spi_csld": {
             "direction": "O"
@@ -3053,6 +3164,353 @@
             }
           }
         }
+      },
+      "liqi_capture": {
+        "interface_ports": {
+          "fifo_out": {
+            "mode": "Master",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0"
+          }
+        },
+        "ports": {
+          "clk": {
+            "type": "clk",
+            "direction": "I"
+          },
+          "resetn": {
+            "type": "rst",
+            "direction": "I"
+          },
+          "trigger_stb": {
+            "direction": "I"
+          },
+          "max_samples": {
+            "direction": "I",
+            "left": "31",
+            "right": "0"
+          },
+          "fifo_count": {
+            "direction": "O",
+            "left": "31",
+            "right": "0"
+          },
+          "fifo_overflow": {
+            "direction": "O"
+          },
+          "clear_ovr_stb": {
+            "direction": "I"
+          },
+          "liqi_out": {
+            "direction": "O",
+            "left": "11",
+            "right": "0"
+          },
+          "liqi_sck": {
+            "direction": "O"
+          },
+          "liqi_csn": {
+            "direction": "O"
+          },
+          "liqi_sdo": {
+            "direction": "I"
+          },
+          "sample_period_us": {
+            "direction": "I",
+            "left": "15",
+            "right": "0"
+          }
+        },
+        "components": {
+          "uw_liqi_capture": {
+            "vlnv": "xilinx.com:module_ref:uw_liqi_capture:1.0",
+            "ip_revision": "1",
+            "xci_name": "userwave_uw_liqi_capture_0_0",
+            "xci_path": "ip/userwave_uw_liqi_capture_0_0/userwave_uw_liqi_capture_0_0.xci",
+            "inst_hier_path": "liqi_capture/uw_liqi_capture",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_liqi_capture",
+              "boundary_crc": "0x0"
+            },
+            "interface_ports": {
+              "fifo_out": {
+                "mode": "Master",
+                "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+                "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+                "parameters": {
+                  "TDATA_NUM_BYTES": {
+                    "value": "2",
+                    "value_src": "constant"
+                  },
+                  "TDEST_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TID_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "TUSER_WIDTH": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TREADY": {
+                    "value": "1",
+                    "value_src": "constant"
+                  },
+                  "HAS_TSTRB": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TKEEP": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "HAS_TLAST": {
+                    "value": "0",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "user_prop"
+                  }
+                },
+                "port_maps": {
+                  "TDATA": {
+                    "physical_name": "fifo_out_tdata",
+                    "direction": "O",
+                    "left": "15",
+                    "right": "0"
+                  },
+                  "TVALID": {
+                    "physical_name": "fifo_out_tvalid",
+                    "direction": "O"
+                  },
+                  "TREADY": {
+                    "physical_name": "fifo_out_tready",
+                    "direction": "I"
+                  }
+                }
+              }
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "ASSOCIATED_BUSIF": {
+                    "value": "fifo_out",
+                    "value_src": "constant"
+                  },
+                  "ASSOCIATED_RESET": {
+                    "value": "resetn",
+                    "value_src": "constant"
+                  },
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "user_prop"
+                  }
+                }
+              },
+              "resetn": {
+                "type": "rst",
+                "direction": "I",
+                "parameters": {
+                  "POLARITY": {
+                    "value": "ACTIVE_LOW",
+                    "value_src": "constant"
+                  }
+                }
+              },
+              "liqi_adc": {
+                "direction": "I",
+                "left": "11",
+                "right": "0"
+              },
+              "liqi_valid_stb": {
+                "direction": "I"
+              },
+              "trigger_stb": {
+                "direction": "I"
+              },
+              "max_samples": {
+                "direction": "I",
+                "left": "31",
+                "right": "0"
+              },
+              "fifo_count": {
+                "direction": "O",
+                "left": "31",
+                "right": "0"
+              },
+              "fifo_overflow": {
+                "direction": "O"
+              },
+              "clear_ovr_stb": {
+                "direction": "I"
+              },
+              "liqi_out": {
+                "direction": "O",
+                "left": "11",
+                "right": "0"
+              }
+            }
+          },
+          "uw_ltc2365": {
+            "vlnv": "xilinx.com:module_ref:uw_ltc2365:1.0",
+            "ip_revision": "1",
+            "xci_name": "userwave_uw_ltc2365_0_0",
+            "xci_path": "ip/userwave_uw_ltc2365_0_0/userwave_uw_ltc2365_0_0.xci",
+            "inst_hier_path": "liqi_capture/uw_ltc2365",
+            "reference_info": {
+              "ref_type": "hdl",
+              "ref_name": "uw_ltc2365",
+              "boundary_crc": "0x0"
+            },
+            "ports": {
+              "clk": {
+                "type": "clk",
+                "direction": "I",
+                "parameters": {
+                  "FREQ_HZ": {
+                    "value": "250000000",
+                    "value_src": "user_prop"
+                  },
+                  "CLK_DOMAIN": {
+                    "value": "top_level_xdma_0_0_axi_aclk",
+                    "value_src": "user_prop"
+                  }
+                }
+              },
+              "sck": {
+                "direction": "O"
+              },
+              "csn": {
+                "direction": "O"
+              },
+              "sdo": {
+                "direction": "I"
+              },
+              "sample_period_us": {
+                "direction": "I",
+                "left": "15",
+                "right": "0"
+              },
+              "adc_value": {
+                "direction": "O",
+                "left": "11",
+                "right": "0"
+              },
+              "sample_valid_stb": {
+                "direction": "O"
+              }
+            }
+          }
+        },
+        "interface_nets": {
+          "uw_liqi_capture_fifo_out": {
+            "interface_ports": [
+              "fifo_out",
+              "uw_liqi_capture/fifo_out"
+            ]
+          }
+        },
+        "nets": {
+          "clk_1": {
+            "ports": [
+              "clk",
+              "uw_liqi_capture/clk",
+              "uw_ltc2365/clk"
+            ]
+          },
+          "liqi_sdo_1": {
+            "ports": [
+              "liqi_sdo",
+              "uw_ltc2365/sdo"
+            ]
+          },
+          "resetn_1": {
+            "ports": [
+              "resetn",
+              "uw_liqi_capture/resetn"
+            ]
+          },
+          "uw_ctl_liqi_clear_ovr_stb": {
+            "ports": [
+              "clear_ovr_stb",
+              "uw_liqi_capture/clear_ovr_stb"
+            ]
+          },
+          "uw_ctl_liqi_max_samples": {
+            "ports": [
+              "max_samples",
+              "uw_liqi_capture/max_samples"
+            ]
+          },
+          "uw_ctl_liqi_sample_period": {
+            "ports": [
+              "sample_period_us",
+              "uw_ltc2365/sample_period_us"
+            ]
+          },
+          "uw_engine_liqi_capture_stb": {
+            "ports": [
+              "trigger_stb",
+              "uw_liqi_capture/trigger_stb"
+            ]
+          },
+          "uw_liqi_capture_fifo_count": {
+            "ports": [
+              "uw_liqi_capture/fifo_count",
+              "fifo_count"
+            ]
+          },
+          "uw_liqi_capture_fifo_overflow": {
+            "ports": [
+              "uw_liqi_capture/fifo_overflow",
+              "fifo_overflow"
+            ]
+          },
+          "uw_liqi_capture_liqi_out": {
+            "ports": [
+              "uw_liqi_capture/liqi_out",
+              "liqi_out"
+            ]
+          },
+          "uw_ltc2365_adc_value": {
+            "ports": [
+              "uw_ltc2365/adc_value",
+              "uw_liqi_capture/liqi_adc"
+            ]
+          },
+          "uw_ltc2365_csn": {
+            "ports": [
+              "uw_ltc2365/csn",
+              "liqi_csn"
+            ]
+          },
+          "uw_ltc2365_sample_valid_stb": {
+            "ports": [
+              "uw_ltc2365/sample_valid_stb",
+              "uw_liqi_capture/liqi_valid_stb"
+            ]
+          },
+          "uw_ltc2365_sck": {
+            "ports": [
+              "uw_ltc2365/sck",
+              "liqi_sck"
+            ]
+          }
+        }
       }
     },
     "interface_nets": {
@@ -3092,6 +3550,12 @@
           "q0_fetcher/axis_out"
         ]
       },
+      "uw_liqi_capture_fifo_out": {
+        "interface_ports": [
+          "liqi_capture/fifo_out",
+          "uw_ctl/liqi_fifo"
+        ]
+      },
       "uw_md_cdc_m_axis": {
         "interface_ports": [
           "uw_md_cdc/m_axis",
@@ -3103,13 +3567,14 @@
       "clk_1": {
         "ports": [
           "clk",
-          "q0_fetcher/clk",
-          "q1_fetcher/clk",
           "uw_pulse/clk",
           "uw_extra_flops/clk",
-          "uw_md_cdc/clk",
+          "uw_ctl/clk",
+          "liqi_capture/clk",
+          "q0_fetcher/clk",
+          "q1_fetcher/clk",
           "uw_engine/clk",
-          "uw_ctl/clk"
+          "uw_md_cdc/clk"
         ]
       },
       "dac_channel_1": {
@@ -3136,6 +3601,12 @@
           "uw_engine/dac_value_wr"
         ]
       },
+      "liqi_sdo_1": {
+        "ports": [
+          "liqi_sdo",
+          "liqi_capture/liqi_sdo"
+        ]
+      },
       "mc_clk_1": {
         "ports": [
           "mc_clk",
@@ -3152,9 +3623,10 @@
         "ports": [
           "resetn",
           "uw_extra_flops/resetn",
-          "uw_md_cdc/resetn",
+          "uw_ctl/resetn",
+          "liqi_capture/resetn",
           "uw_engine/resetn",
-          "uw_ctl/resetn"
+          "uw_md_cdc/resetn"
         ]
       },
       "uw_ctl_ctl_command": {
@@ -3167,6 +3639,24 @@
         "ports": [
           "uw_ctl/disable_ncap",
           "disable_ncap"
+        ]
+      },
+      "uw_ctl_liqi_clear_ovr_stb": {
+        "ports": [
+          "uw_ctl/liqi_clear_ovr_stb",
+          "liqi_capture/clear_ovr_stb"
+        ]
+      },
+      "uw_ctl_liqi_max_samples": {
+        "ports": [
+          "uw_ctl/liqi_max_samples",
+          "liqi_capture/max_samples"
+        ]
+      },
+      "uw_ctl_liqi_sample_period": {
+        "ports": [
+          "uw_ctl/liqi_sample_period",
+          "liqi_capture/sample_period_us"
         ]
       },
       "uw_ctl_q0_suspend": {
@@ -3239,6 +3729,12 @@
         "ports": [
           "uw_engine/liq_sw",
           "uw_extra_flops/liq_sw"
+        ]
+      },
+      "uw_engine_liqi_capture_stb": {
+        "ports": [
+          "uw_engine/liqi_capture_stb",
+          "liqi_capture/trigger_stb"
         ]
       },
       "uw_engine_md_stall_stb": {
@@ -3445,11 +3941,23 @@
           "vpretop_sw"
         ]
       },
+      "uw_extra_flops_pin_aux_rs0": {
+        "ports": [
+          "uw_extra_flops/pin_aux_rs0",
+          "pin_aux_rs0"
+        ]
+      },
+      "uw_extra_flops_pin_aux_rs256": {
+        "ports": [
+          "uw_extra_flops/pin_aux_rs256",
+          "pin_aux_rs256"
+        ]
+      },
       "uw_fetcher_0_q_active": {
         "ports": [
           "q0_fetcher/q_active",
-          "uw_engine/q0_active",
-          "uw_ctl/q0_active"
+          "uw_ctl/q0_active",
+          "uw_engine/q0_active"
         ]
       },
       "uw_fetcher_0_uw_host_free": {
@@ -3467,8 +3975,8 @@
       "uw_fetcher_1_q_active": {
         "ports": [
           "q1_fetcher/q_active",
-          "uw_engine/q1_active",
-          "uw_ctl/q1_active"
+          "uw_ctl/q1_active",
+          "uw_engine/q1_active"
         ]
       },
       "uw_fetcher_1_uw_host_free": {
@@ -3481,6 +3989,36 @@
         "ports": [
           "q0_fetcher/alignment_err_stb",
           "uw_ctl/q0_alignment_stb"
+        ]
+      },
+      "uw_liqi_capture_fifo_count": {
+        "ports": [
+          "liqi_capture/fifo_count",
+          "uw_ctl/liqi_fifo_count"
+        ]
+      },
+      "uw_liqi_capture_fifo_overflow": {
+        "ports": [
+          "liqi_capture/fifo_overflow",
+          "uw_ctl/liqi_fifo_ovr"
+        ]
+      },
+      "uw_liqi_capture_liqi_out": {
+        "ports": [
+          "liqi_capture/liqi_out",
+          "uw_ctl/liqi_adc"
+        ]
+      },
+      "uw_ltc2365_csn": {
+        "ports": [
+          "liqi_capture/liqi_csn",
+          "liqi_csn"
+        ]
+      },
+      "uw_ltc2365_sck": {
+        "ports": [
+          "liqi_capture/liqi_sck",
+          "liqi_sck"
         ]
       },
       "uw_pulse_pa_pulse": {

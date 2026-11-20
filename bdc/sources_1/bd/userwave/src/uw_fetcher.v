@@ -147,7 +147,7 @@ assign M_AXI_WSTRB   = 0;
 assign M_AXI_WVALID  = 0;   
 assign M_AXI_WLAST   = 0;  
 
-assign M_AXI_BVALID  = 0;
+assign M_AXI_BREADY  = 0;
 //=============================================================================
 
 

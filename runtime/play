@@ -29,6 +29,6 @@ ctl safe_run 0
 # Wait for underflow
 wait_underflow >/dev/null
 
-
+echo UW_TIMESTAMP = $(pcireg UW_TIMESTAMP)
 
 

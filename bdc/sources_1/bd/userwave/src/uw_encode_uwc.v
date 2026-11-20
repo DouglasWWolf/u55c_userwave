@@ -49,6 +49,9 @@ module uw_encode_uwc
     input[15:0]    vpretop_b,
     input[15:0]    vpretop_a,
 
+    input[15:0]    nsa_cmd_index,
+    input[15:0]    liqi_capture_delay,
+    input          liqi_capture_en,
     input[15:0]    read_data_type,
     input[15:0]    read_characterization_id,
     input[15:0]    read_start_time,
@@ -63,12 +66,12 @@ module uw_encode_uwc
 );
 
 
-wire[ 7:0] analog_reserved1 = 0;
-wire[ 2:0] analog_reserved0 = 0;
-wire[31:0] reserved1        = 0;
-wire[15:0] reserved0        = 0;
-wire[ 7:0] read_reserved1   = 0;
-wire[ 2:0] read_reserved0   = 0;
+wire[7:0] analog_reserved1 = 0;
+wire[2:0] analog_reserved0 = 0;
+wire[7:0] liqi_reserved1   = 0;
+wire[6:0] liqi_reserved0   = 0;
+wire[7:0] read_reserved1   = 0;
+wire[2:0] read_reserved0   = 0;
 
 assign uwc = 
 {
@@ -100,8 +103,11 @@ assign uwc =
     vpretop_sw_delay,
     vpretop_b,
     vpretop_a,
-    reserved1,
-    reserved0,
+    nsa_cmd_index,
+    liqi_capture_delay,
+    liqi_reserved1,
+    liqi_reserved0,
+    liqi_capture_en,
     read_data_type,
     read_characterization_id,
     read_start_time,

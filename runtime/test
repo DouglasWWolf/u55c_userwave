@@ -4,4 +4,5 @@
 ./test_md_stall || exit
 ./test_q_switching || exit
 ./test_engine || exit
+./test_liqi_capture || exit
 rm *.tmp

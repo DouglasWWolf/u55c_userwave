@@ -77,6 +77,33 @@ module uw_ctl # (parameter AW=8)
     // The metadata timestamp.  Always 0 when the engine is halted.
     input[63:0] md_timestamp,
 
+    //-------------------- Ports related to LIQI-capture ----------------------
+
+    // The total number of LIQI samples we want to record
+    output reg[31:0] liqi_max_samples,
+
+    // This strobes high to clear the LIQI FIFO overflow flag
+    output reg       liqi_clear_ovr_stb,
+
+    // The sampling period for capturing LIQI samples, in microseconds
+    output reg[15:0] liqi_sample_period,
+
+    // The current value of the LIQI ADC
+    input     [11:0] liqi_adc,
+
+    // The number of entries in the LIQI FIFO
+    input     [31:0] liqi_fifo_count,
+
+    // When this is asserted, the LIQI FIFO has overflowedKs
+    input            liqi_fifo_ovr,
+
+    // The FIFO where LIQI samples are stored
+    input     [15:0] liqi_fifo_tdata,
+    input            liqi_fifo_tvalid,
+    output reg       liqi_fifo_tready,
+
+    //------------------------------------------------------------------------
+
     //================== This is an AXI4-Lite slave interface ==================
         
     // "Specify write address"              -- Master --    -- Slave --
@@ -274,6 +301,41 @@ localparam REG_Q1_UWC_PROVIDED_L = 37;
     @rtype    ro
 */
 localparam REG_Q1_UWC_HOST_FREE = 38;
+
+/*
+    @register The maximum number of ADC samples to take during a LIQI capture
+*/
+localparam REG_LIQI_MAX_SAMPLES = 48;
+
+/*
+    @register the LIQI sampling period, in microseconds
+*/
+localparam REG_LIQI_SAMPLE_PERIOD = 49;
+
+/*
+    @register The current value of the LIQI ADC
+    @rtype    RO
+*/
+localparam REG_LIQI_ADC = 50;
+
+/*
+    @register The LIQI FIFO.   Returns 0xFFFF if FIFO is empty
+    @rtype    RO
+*/
+localparam REG_LIQI_FIFO = 51;
+
+/*
+    @register The number of entries in the LIQI FIFO
+    @rtype    RO
+*/
+localparam REG_LIQI_FIFO_COUNT = 52;
+
+/*
+    @register This is 1 if the LIQI FIFO has overflowed.
+    @rtype    W1C
+*/
+localparam REG_LIQI_FIFO_OVR = 53;
+
 //==========================================================================
 
 
@@ -338,8 +400,9 @@ reg[31:0] md_timestamp_l;
 //==========================================================================
 always @(posedge clk) begin
 
-    // This strobes high for a single cycle at a time
-    dac_write_stb <= 0;
+    // These strobe high for a single cycle at a time
+    dac_write_stb      <= 0;
+    liqi_clear_ovr_stb <= 0;
 
     // If we're in reset, initialize important registers
     if (resetn == 0) begin
@@ -357,6 +420,9 @@ always @(posedge clk) begin
         ctl_command         <= 0;
         dac_mask            <= 0;
         enable_ncap         <= 0;
+
+        liqi_max_samples    <= 8192;
+        liqi_sample_period  <= 2;
     end
 
     // Otherwise, we're not in reset...
@@ -396,6 +462,11 @@ always @(posedge clk) begin
                     REG_Q1_HOST_ADDR_L:     if (q1_suspend) q1_uw_host_addr[31:00] <= ashi_wdata;
                     REG_Q1_HOST_CAPACITY:   if (q1_suspend) q1_uw_host_capacity    <= ashi_wdata;
 
+                    REG_LIQI_MAX_SAMPLES:   liqi_max_samples   <= ashi_wdata;
+                    REG_LIQI_SAMPLE_PERIOD: liqi_sample_period <= ashi_wdata;
+                    REG_LIQI_FIFO_OVR:      liqi_clear_ovr_stb <= ashi_wdata[0];
+
+
                     // Writes to any other register are a decode-error
                     default: ashi_wresp <= DECERR;
                 endcase
@@ -428,12 +499,16 @@ end
 //==========================================================================
 always @(posedge clk) begin
 
+    // This strobes high for a single cycle at a time
+    liqi_fifo_tready <= 0;
+
     // If we're in reset, initialize important registers
     if (resetn == 0) begin
         ashi_read_state <= 0;
-    
+    end
+
     // If we're not in reset, and a read-request has occured...        
-    end else if (ashi_read) begin
+    else if (ashi_read) begin
    
         // Assume for the moment that the result will be OKAY
         ashi_rresp <= OKAY;              
@@ -477,6 +552,21 @@ always @(posedge clk) begin
                                         md_timestamp_l <= md_timestamp[31:0];
                                     end
             REG_TIMESTAMP_L:        ashi_rdata <= md_timestamp_l;
+
+            REG_LIQI_MAX_SAMPLES:   ashi_rdata <= liqi_max_samples;
+            REG_LIQI_SAMPLE_PERIOD: ashi_rdata <= liqi_sample_period;
+            REG_LIQI_ADC:           ashi_rdata <= liqi_adc;
+            REG_LIQI_FIFO_COUNT:    ashi_rdata <= liqi_fifo_count;
+            REG_LIQI_FIFO_OVR:      ashi_rdata <= liqi_fifo_ovr;
+
+            REG_LIQI_FIFO:
+                if (liqi_fifo_tvalid) begin
+                    ashi_rdata       <= liqi_fifo_tdata;
+                    liqi_fifo_tready <= 1;
+                end else begin
+                    ashi_rdata <= 16'hFFFF;
+                end
+
 
             // Reads of any other register are a decode-error
             default: ashi_rresp <= DECERR;
